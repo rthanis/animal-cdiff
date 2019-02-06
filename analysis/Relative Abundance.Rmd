@@ -18,11 +18,11 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r}
 library("phyloseq"); packageVersion("phyloseq")
 library("ggplot2"); packageVersion("ggplot2")
-path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
-ps_Canine <- readRDS(file.path(path, "ps_Canine.RDS"))
+path <- here::here()
+ps_Canine <- readRDS(file.path(path, "results", "ps_Canine.RDS"))
 ps_Caninetranformed <- transform_sample_counts(ps_Canine, function(OTU) OTU/sum(OTU)*100)
 plot_bar(ps_Caninetranformed, fill="Family")+facet_wrap(~CD, scales="free_x")
-ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRAFamily1.pdf", width = 5, height = 5, units = "in")
+ggsave(file.path(path, "figures", "CanineRAFamily1.pdf"), width = 5, height = 5, units = "in")
 pscanine.phyla <- transform_sample_counts(ps_Canine, function(OTU) OTU/sum(OTU)*100)
 plot_bar(pscanine.phyla, fill="Phylum")+facet_wrap(~CD, scales="free_x")
 p = plot_bar(pscanine.phyla, fill="Phylum")+facet_wrap(~CD, scales="free_x")
