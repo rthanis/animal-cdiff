@@ -1,0 +1,80 @@
+---
+title: "Permonova_adonis"
+author: "Rajani"
+date: "January 9, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This markdown documents the permanova test using the adonis2 function in vegan. The document shows the adonis2 calculation to identify if there is a significant difference between CD positive and negative within animal groups canine and equine. 
+
+```{r}
+library(phyloseq)
+library(ggplot2)
+library(vegan)
+library(MASS)
+setwd("C:/Users/rthanis/Desktop/16SsequencingForMS")
+path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
+ps.prop_Canine <- readRDS(file.path(path, "ps.prop_Canine.RDS"))
+ps.prop_Canine
+ps.prop_Equine <- readRDS(file.path(path, "ps.prop_Equine.RDS"))
+ps.prop_Equine
+#Calculation of the distances using the Bray method
+bray_Canine<-phyloseq::distance(ps.prop_Canine,method = "bray")
+bray_Equine<-phyloseq::distance(ps.prop_Equine,method = "bray")
+#Creation of dataframes for adonis
+df_Canine<-data.frame(sample_data(ps.prop_Canine))
+df_Equine<-data.frame(sample_data(ps.prop_Equine))
+#Adonis calculation for significance for CD plus minus
+adonis2(bray_Canine ~ CD, data=df_Canine)
+adonis2(bray_Equine ~ CD, data=df_Equine)
+#Adonis calculation for significance for Antibiotic plus minus
+
+(ps.prop_CanineAb <- subset_samples(ps.prop_Canine, Ab != "NA"))
+bray_CanineAb<-phyloseq::distance(ps.prop_CanineAb,method = "bray")
+df_CanineAb<-data.frame(sample_data(ps.prop_CanineAb))
+adonis2(bray_CanineAb ~ Ab, data=df_CanineAb)
+
+(ps.prop_CanineGr <- subset_samples(ps.prop_Canine, Sex != "NA"))
+bray_CanineGr<-phyloseq::distance(ps.prop_CanineGr,method = "bray")
+df_CanineGr<-data.frame(sample_data(ps.prop_CanineGr))
+adonis2(bray_CanineGr ~ Sex, data=df_CanineGr)
+
+(ps.prop_CanineAge <- subset_samples(ps.prop_Canine, Age != "NA"))
+bray_CanineAge<-phyloseq::distance(ps.prop_CanineAge,method = "bray")
+df_CanineAge<-data.frame(sample_data(ps.prop_CanineAge))
+adonis2(bray_CanineAge ~ Age, data=df_CanineAge)
+
+(ps.prop_CanineGI <- subset_samples(ps.prop_Canine, GI != "NA"))
+bray_CanineGI<-phyloseq::distance(ps.prop_CanineGI,method = "bray")
+df_CanineGI<-data.frame(sample_data(ps.prop_CanineGI))
+adonis2(bray_CanineGI ~ GI, data=df_CanineGI)
+
+library(dplyr)
+#tb <- sample_data(ps.prop_Canine) %>% as.data.frame %>% as_tibble(rownames = "Sample")
+#has.ab <- (df_Canine$Ab == "NA") # removing "NA" for Ab from dataframe
+#adonis2(bray_Canine[has.ab, has.ab] ~ Ab, data=df_Canine[has.ab,])
+#has.ab <- !is.na(df_Canine$Ab) 
+#adonis2(bray_Canine[has.ab, has.ab] ~ Ab, data=df_Canine[has.ab,]) 
+
+?is.na.data.frame
+has.ab
+df_Canine
+str has.ab
+
+```
+
+## Loadind 
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

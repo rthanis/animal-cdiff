@@ -1,0 +1,100 @@
+---
+title: "Relative Abundance"
+author: "Rajani"
+date: "January 10, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library("phyloseq"); packageVersion("phyloseq")
+library("ggplot2"); packageVersion("ggplot2")
+path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
+ps_Canine <- readRDS(file.path(path, "ps_Canine.RDS"))
+ps_Caninetranformed <- transform_sample_counts(ps_Canine, function(OTU) OTU/sum(OTU)*100)
+plot_bar(ps_Caninetranformed, fill="Family")+facet_wrap(~CD, scales="free_x")
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRAFamily1.pdf", width = 5, height = 5, units = "in")
+pscanine.phyla <- transform_sample_counts(ps_Canine, function(OTU) OTU/sum(OTU)*100)
+plot_bar(pscanine.phyla, fill="Phylum")+facet_wrap(~CD, scales="free_x")
+p = plot_bar(pscanine.phyla, fill="Phylum")+facet_wrap(~CD, scales="free_x")
+p + geom_col(aes(color=Phylum, fill=Phylum, position="stack"))+
+theme(axis.text.x=element_blank())
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRAphylum2.pdf", width = 9, height = 5, units = "in")
+
+Canine.family = subset_taxa(ps_Canine, Family == "Peptostreptococcaceae")
+Canine.familytransformed <- transform_sample_counts(Canine.family, function(OTU) OTU/sum(OTU)*100)
+plot_bar(Canine.familytransformed, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p = plot_bar(Canine.familytransformed, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p + geom_col(aes(color=Genus, fill=Genus, position="stack"))+
+theme(axis.text.x=element_blank())
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRAPeptostreptococcaceae.pdf", width = 9, height = 5, units = "in")
+
+Canine.family = subset_taxa(ps_Canine, Family == "Erysipelotrichaceae")
+Canine.familyErysipelotrichaceae <- transform_sample_counts(Canine.family, function(OTU) OTU/sum(OTU)*100)
+plot_bar(Canine.familyErysipelotrichaceae, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p = plot_bar(Canine.familyErysipelotrichaceae, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p + geom_col(aes(color=Genus, fill=Genus, position="stack"))+
+theme(axis.text.x=element_blank())
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRAErysipelotrichaceae.pdf", width = 9, height = 5, units = "in")
+
+Canine.family = subset_taxa(ps_Canine, Family == "Lactobacillaceae")
+Canine.familyLactobacillaceae <- transform_sample_counts(Canine.family, function(OTU) OTU/sum(OTU)*100)
+plot_bar(Canine.familyLactobacillaceae, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p = plot_bar(Canine.familyLactobacillaceae, fill="Genus")+facet_wrap(~CD, scales="free_x")
+p + geom_col(aes(color=Genus, fill=Genus, position="stack"))+
+theme(axis.text.x=element_blank())
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRALactobacillaceae.pdf", width = 9, height = 5, units = "in")
+
+
+
+```
+
+```{r}
+library("phyloseq"); packageVersion("phyloseq")
+library("ggplot2"); packageVersion("ggplot2")
+library(dplyr)
+path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
+ps_Canine <- readRDS(file.path(path, "ps_Canine.RDS"))
+ps_Caninetranformed <- transform_sample_counts(ps_Canine, function(OTU) OTU/sum(OTU)*100)
+```
+```{r}
+tb <- subset_taxa(ps_Caninetranformed, 
+                  taxa_names(ps_Caninetranformed) %in% c("SV19", "SV20", "SV82", "SV35", "SV102")) %>%
+  psmelt %>%
+  as_tibble
+```
+
+```{r}
+ggplot(tb, aes(CD, Abundance + 0.01, color = CD)) +
+#  geom_violin(draw_quantiles = c(0.5)) +
+  geom_jitter(height = 0.1) +
+  scale_y_log10() +
+  facet_wrap(~OTU)
+ggsave("C:/Users/rthanis/Desktop/ClinicalProject/ManuscriptPrep/Microbiome/CanineRASV.pdf", width = 9, height = 5, units = "in")
+```
+```{r}
+tb %>%
+  group_by(OTU, CD) %>%
+  summarise(Total = n(), Prevalence = sum(Abundance > 0), Zeros = sum(Abundance == 0))
+```
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

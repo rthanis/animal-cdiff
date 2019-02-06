@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+figures/
+tax_dbs/
+data/reads/
+
+# Excel temp files
+~$*
