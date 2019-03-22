@@ -1,0 +1,135 @@
+
+
+# Setup
+
+```{r}
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+
+ps <- readRDS(file.path(here::here(), "results", "ps.RDS"))
+```
+
+Clean up the sample data by 1) rename `Species` to `Host_species`, 2) making
+all "NA"'s into `NA`'s, getting the year from `ID`, and using a consistent
+letter case. Also add the total read count.
+```{r}
+sam <- sample_data(ps) %>%
+    # Caution, as_tibble resorts the samples by sample name
+    as_tibble(rownames = "Sample") %>%
+    rename(Host_species = Species) %>%
+    mutate_all(~ifelse(. == "NA", NA, .)) %>%
+    mutate(Year = ifelse(str_detect(ID, "_"), 2017, 2016)) %>%
+    mutate_at(vars(Ab, GI, Toxigenic, Ribotype), str_to_title)
+samdf <- sam %>%
+    select(-Sample, -ID) %>%
+    as.data.frame
+rownames(samdf) <- sam$Sample
+samdf <- sample_data(samdf)
+sample_data(ps) <- samdf
+sample_data(ps)$Sample_sum = sample_sums(ps)
+```
+
+Get rid of the two very low-read samples and the Avian and Alpaca samples.
+```{r}
+# qplot(sample_sums(ps)) + geom_vline(xintercept = 1000)
+ps <- subset_samples(ps, (Sample_sum > 1000) & Host_species %in% c("Canine", "Feline", "Equine", "Ovine"))
+ps
+```
+
+### Alpha diversity
+
+```{r}
+psf <- ps %>%
+    tax_glom("Family")
+psg <- ps %>%
+    tax_glom("Genus")
+
+```
+
+The diversity function in the `vegan` package can be used to calculate Shannon,
+Simpson, and Inverse Simpson indices, and is already installed with phyloseq.
+
+I will make a dataframe with the sample data and with Inverse Simpson
+diversity at the SV and Family levels.
+
+```{r}
+invsimp.family <- vegan::diversity(otu_table(psf), index = "invsimpson",
+    MARGIN = 1 + taxa_are_rows(psf))
+invsimp.genus <- vegan::diversity(otu_table(psg), index = "invsimpson",
+    MARGIN = 1 + taxa_are_rows(psf))
+invsimp.sv <- vegan::diversity(otu_table(ps), index = "invsimpson",
+    MARGIN = 1 + taxa_are_rows(psf))
+# Check the output
+head(invsimp.family)
+head(invsimp.genus)
+head(invsimp.sv)
+# In the same order as the phyloseq samples
+all(names(invsimp.family) == sample_names(ps))
+all(names(invsimp.genus) == sample_names(ps))
+
+# add to the sample data
+sam <- sample_data(ps) 
+sam$InvSimp.Family <- invsimp.family
+sam$InvSimp.genus <- invsimp.genus
+sam$InvSimp.SV <- invsimp.sv
+sample_data(ps) <- sam
+head(sam)
+```
+
+```{r}
+colors.host_species = c(Canine = "#000000", Equine = "#489BE5", Feline = "#F53112", Ovine = "#AE43A7")
+shape.cd <- c(Positive = 19, Negative = 2)
+```
+
+```{r}
+tb <- sam %>%
+    as_tibble(rownames = "Sample") %>%
+    mutate(Host_species.fct = fct_reorder(Host_species, InvSimp.SV)) %>%
+    rename( Family = InvSimp.Family, Genus = InvSimp.genus, 
+            ASV = InvSimp.SV) %>%
+    gather("Rank", "Diversity", Family, Genus, ASV)
+tb <- tb %>%
+  mutate(Rank.fct = factor(Rank, levels = c("Family", "Genus", "ASV")))
+```
+
+Different host animals:
+```{r, fig.width=9, fig.height=5}
+p1 <- ggplot(tb, aes(Host_species.fct, Diversity, color = Host_species.fct, shape = CD)) + 
+    geom_quasirandom() +
+    facet_wrap(~Rank.fct, scales = "free") +
+    scale_color_manual(values = colors.host_species) +
+    scale_shape_manual(values = shape.cd) + 
+    labs(x = "Host species", y = "Alpha diversity (Inverse Simpson)") + 
+    theme_bw() 
+# ggsave(file.path(here::here(), "figures", "InvSimp_Allhost_ASVFamily.pdf"))
+p1  + theme(legend.position = "none")
+ggsave(file.path(here::here(), "figures", "Allhost_InvSimp226.pdf"),  width = 8, height = 7, units = "in")
+```
+
+
+
+
+### Ordination
+
+```{r}
+ps.prop<-transform_sample_counts(ps, function(x) 1000 * x/(sum(x)))
+ords.nmds.bray<-ordinate(ps.prop,method = "NMDS",distance = "bray")
+```
+
+```{r}
+p2 <- plot_ordination(ps.prop,ords.nmds.bray, color = "Host_species", shape = "CD", type="samples") + 
+  geom_point(size=2.5) + 
+  scale_color_manual(values = colors.host_species) +
+  scale_shape_manual(values = shape.cd) +
+  labs(color = "Host species", shape = "C. difficile") #TODO: italicize C difficile
+p2 + theme_bw()
+ggsave(file.path(here::here(), "figures", "Allhost_NMDS.pdf"),  width = 8, height = 7, units = "in")
+```
+
+
+
+```{r, fig.height = 7, fig.width = 8}
+cowplot::plot_grid(p1+ theme_bw()+theme(legend.position = "none"), p2+ theme_bw(), nrow=2, axis = "tblr", align = "hv", labels = "AUTO")
+ggsave(file.path(here::here(), "figures", "Figure2_Allhost_diversity.pdf"),  width = 8, height = 7, units = "in")
+```
