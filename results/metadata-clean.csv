@@ -1,0 +1,206 @@
+Sample,Host_species,Breed,Age_reported,Age_group,Age,SexCS,Sex,Neutered,Ab_status,Ab_type,Ab_group,GI_status,CD_lab,CD_toxigenic,CD_ribotype,Relevant_diagnosis_or_reason_for_visit,Sample_number,Sequence_ID,Year_sequenced
+CS1_EQ1,Equine,Oldenburg,NA,Not applicable,NA,MC,M,Yes,Non-treated,None reported,NA,Healthy,Negative,Negative,Negative,Fever and leukopenia - resolved,1,CS1-EQ1,2018
+CS2_CN1,Canine,West Highland White Terrier,NA,Not known,NA,MC,M,Yes,Treated,Metronidazole (prescribed 11/21 for five days),Nitroimidazole,GI condition,Positive,Toxigenic,FP499,Lethargy and diarrhea - unexplained,2,CS2,2017
+CS3_CN2,Canine,Bassett Hound,NA,Not known,NA,MC,M,Yes,Treated,"Metronidazole (prescribed 11/1)
+Ampicillin (11/2?)
+Ofloxacin (OD, TID)","Nitroimidazole, β-Lactams, Quinolones",GI condition,Positive,Toxigenic,F106,"Extensive: Chronic hyporexia, CKD, Inflammatory Bowel Disease",3,CS3,2017
+CS4_CN3,Canine,Cavalier King Charles Spaniel,NA,Not known,NA,FS,F,Yes,Non-treated,None reported,Non-treated,GI condition,Positive,Toxigenic,F014-020,Protein losing enteropathy,4,NA,Not sequenced
+CS5_CN4,Canine,Dachsund,NA,Not known,NA,FS,F,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,Pancreatitis,5,CS5-CN4,2018
+CS6_CN5,Canine,German Shepherd,NA,Not known,NA,M,M,No,Non-treated,None reported,Non-treated,GI condition,Positive,Toxigenic,F106,Jejunal torsion,6,CS6,2017
+CS7_EQ2,Equine,Arabian,NA,Not applicable,NA,F,F,No,Treated,Polymyxin B (12/9?),NA,Healthy,Negative,Negative,Negative,Fever and neutropenia,7,CS7,2017
+CS8_OV1,Ovine,NA,NA,Not applicable,NA,M,M,No,Non-treated,NA,NA,Healthy,Negative,Negative,Negative,None Reported,8,CS8-OV1,2018
+CS9_OV2,Ovine,NA,NA,Not applicable,NA,M,M,No,Non-treated,NA,NA,Healthy,Negative,Negative,Negative,None Reported,9,CS9,2017
+CS10_OV3,Ovine,NA,NA,Not applicable,NA,M,M,No,Non-treated,NA,NA,Healthy,Negative,Negative,Negative,None Reported,10,CS10,2017
+CS11_OV4,Ovine,NA,NA,Not applicable,NA,M,M,No,Non-treated,NA,NA,Healthy,Negative,Negative,Negative,None Reported,11,CS11-OV4,2018
+CS12_OV5,Ovine,NA,NA,Not applicable,NA,M,M,No,Non-treated,NA,NA,Healthy,Negative,Negative,Negative,None Reported,12,CS12-OV5,2018
+CS13_EQ3,Equine,Warmblood,NA,Not applicable,NA,MC,M,Yes,Treated,"potassium penicillin and gentamicin (March 2016), Meropenem (4/5/16)",NA,Healthy,Negative,Negative,Negative,RF possible fracture,13,CS13,2017
+CS14_CN6,Canine,Chow Chow,NA,Not known,NA,FS,F,Yes,Non-treated,NA,Non-treated,Not known,Positive,Toxigenic,F014-020,NA,14,CS14,2017
+CS15_CN7,Canine,Beagle,NA,Not known,NA,MC,M,Yes,Treated,doxycycline (12/14),Tetracyclines,Healthy,Negative,Negative,Negative,cough nonresponsive to medication,15,CS15,2017
+CS16_CN8,Canine,German Shepherd,NA,Not known,NA,FS,F,Yes,Treated,"metronidazole (11/19-early Dec, 12/14)",Nitroimidazole,GI condition,Negative,Negative,Negative,"chronic intermittent diarrhea with hematochezia and intermittent vomiting, intestinal dysbiosis",16,CS16,2017
+CS17_EQ4,Equine,Paint Horse,NA,Not applicable,NA,MC,M,Yes,Treated,"neo-poly-bac ointment (12/4), ceftiofur (12/16), gentamicin (12/16)",NA,Healthy,Negative,Negative,Negative,conjunctival hemangiosarcoma,17,CS17,2017
+CS18_CN8,Canine,Akita,NA,Not known,NA,M,M,No,Treated,marbofloxacin (12/6),Quinolones,Healthy,Negative,Negative,Negative,"reduced appetite, failure to mature, congential malformations",18,CS18,2017
+CS19_CN9,Canine,Boston Terrier,NA,Not known,NA,MC,M,Yes,Non-treated,NA,Non-treated,Healthy,Negative,Negative,Negative,chronic mild prolapsed rectum,19,CS19,2017
+CS20_FL1,Feline,American Domestic Short Hair,NA,Not applicable,NA,MC,M,Yes,Treated,"clavamox (12/11), marbofloxacin",NA,GI condition,Negative,Negative,Negative,vomiting and inappetence,20,CS20-FL1,2018
+CS21_CN10,Canine,Soft-Coated Wheaten Terrier,NA,Not known,NA,M,M,No,Treated,"amoxacillin and clindamycin (through 12/6), metronidazole (through 12/7)","β-Lactams, Lincosamides, Nitroimidazole",Healthy,Positive,Toxigenic,FP310,chronic cough and reverse sneeze,21,CS21,2017
+CS22_CN11,Canine,English Springer Spaniel,NA,Not known,NA,MC,M,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,left sided epistaxis,22,CS22,2017
+CS23_EQ5,Equine,Paint Horse,NA,Not applicable,NA,MC,M,Yes,Treated,"polymixin B (12/17-12/20), ceftiofur (12/17), metronidazole (12/21)",NA,Healthy,Negative,Negative,Negative,stromal abscess,23,CS23-EQ5,2018
+CS24_CN12,Canine,Soft-Coated Wheaten Terrier,NA,Not known,NA,M,M,No,Treated,"amoxacillin and clindamycin (through 12/6), metronidazole (through 12/7)","β-Lactams, Lincosamides, Nitroimidazole",Healthy,Positive,Toxigenic,F106,chronic cough and reverse sneeze,24,CS24,2017
+CS25_AL1,Alpaca,NA,NA,Not applicable,NA,M,M,No,Non-treated,None reported,NA,GI condition,Negative,Negative,Negative,C1 impaction and parasitism,25,CS25,2017
+CS26_CN13,Canine,NA,NA,Not known,NA,Not known,Not known,Not known,Not known,NA,NA,Not known,Negative,Negative,Negative,NA,26,NA,Not sequenced
+CS27_CN13,Canine,Australian Shepherd,NA,Not known,NA,MC,M,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,chronic paroxysmal coughing,27,CS27,2017
+CS28_CN14,Canine,Rat Terrier,NA,Not known,NA,FS,F,Yes,Treated,doxycycline (12/30),Tetracyclines,Healthy,Positive,Toxigenic,FP313,"cardiomegaly, history of congestive heart failure",28,CS28,2017
+CS29_CN15,Canine,Dachsund,NA,Not known,NA,MC,M,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,hematochezia,29,CS29,2017
+CS30_CN17,Canine,Siberian Husky,NA,Not known,NA,M,M,No,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,"recheck CBC, chem, and exam",30,CS30-CN17,2018
+CS31_CN18,Canine,Jack Russel Terrier,NA,Not known,NA,MC,M,Yes,Non-treated,None reported,Non-treated,GI condition,Negative,Negative,Negative,cecal gastrointestinal stromal tumor resection follow-up,31,CS31-CN18,2018
+CS32_CN19,Canine,German Shepherd,NA,Not known,NA,FS,F,Yes,Treated,"metronidazole (11/27, 10 days)",Nitroimidazole,GI condition,Negative,Negative,Negative,"chronic diarrhea and weight loss, possible exocrine pancreatic insufficiency",32,CS32-CN19,2018
+CS33_CN20,Canine,Labrador Retriever,NA,Not known,NA,FS,F,Yes,Treated,"doxycycline (12/27, 1/9-1/11)",Tetracyclines,Healthy,Negative,Negative,Negative,chronic cough and possible right cervical mass,33,CS33-CN20,2018
+CS34_CN21,Canine,Poodle-Toy,NA,Not known,NA,FS,F,Yes,Treated,"neopolydex (12/1), minocycline (through 1/13), metronidazole (1/14)","Tetracyclines, Nitroimidazole",Healthy,Negative,Negative,Negative,"hyporexia, azotemia, proteinuria",34,CS34-CN21,2018
+CS35_EQ6,Equine,Quarter Horse,NA,Not applicable,NA,F,F,No,Treated,"penicillin (1/9, 72 hours), gentamicin (1/9, 72 hours)",NA,GI condition,Positive,Toxigenic,014-020,colic,35,CS35-EQ6,2018
+CS36_EQ7,Equine,Westphalian,NA,Not applicable,NA,MC,M,Yes,Treated,"broad spectrum antibiotics (1/14), enrofloxacin",NA,GI condition,Negative,Negative,Negative,colic,36,CS36-EQ7,2018
+CS37_FL2,Feline,American Domestic Short Hair,NA,Not applicable,NA,MC,M,Yes,Treated,"albon (through late Dec), metronidazole (~12/30-1/7), amoxicillin (~12/30)",NA,GI condition,Negative,Negative,Negative,"chronic diarrea and vomiting, small cell gastrointestinal lymphoma",37,CS37-FL2,2018
+CS38_CN22,Canine,English Springer Spaniel,NA,Not known,NA,M,M,No,Treated,"ciprofloxacin (11/16, 2 weeks), clavamox (12/26, 4 days), metronidazole (12/26,7 days)","Quinolones, β-Lactams, Nitroimidazole",GI condition,Negative,Negative,Negative,"diarrhea, vomiting, hyporexia",38,CS38-CN22,2018
+CS39_EQ8,Equine,Welsh Pony/Cob,NA,Not applicable,NA,MC,M,Yes,Treated,"metronidazole (1/19), ceftiofur (1/20), gentamicin (1/20), k-penicillin (1/20), enrofloxacin (1/20), polymyxin B (1/20, 3 doses), antibiotics discontinued 1/26",NA,GI condition,Negative,Negative,Negative,colitis,39,CS39-EQ8,2018
+CS40_CN23,Canine,Beagle,NA,Not known,NA,FS,F,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,"one year history of sneezing, nasal worm infection",40,CS40-CN23,2018
+CS41_EQ9,Equine,Dutch Warmblood,NA,Not applicable,NA,F,F,No,Treated,"1/24-1/29:polymyxin B, k-penicillin, gentamicin, metronidazole(through 2/1); 1/29: ceftifur IM",NA,GI condition,Negative,Negative,Negative,colic,41,CS41-EQ9,2018
+CS42_EQ10,Equine,Warmblood,NA,Not applicable,NA,MC,M,Yes,Treated,neo-poly-dex (through 1/20),NA,Healthy,Negative,Negative,Negative,"colic, eye recheck for chronic keratitis",42,CS42-EQ10,2018
+CS43_CN24,Canine,Hound,NA,Not known,NA,FS,F,Yes,Treated,"clavamox, enrofloxacin","β-Lactams, Quinolones",GI condition,Negative,Negative,Negative,"fever, chronic history of diarrhea",43,CS43-CN24,2018
+CS44_CN25,Canine,English Springer Spaniel,NA,Not known,NA,MC,M,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,"chronic progressive anemia, liver dysfunction, cough; intrahepatic portosystemic shunt",44,CS44-CN25,2018
+CS45_FL3,Feline,Domestic Shorthair,NA,Not applicable,NA,FS,F,Yes,Non-treated,None reported,NA,Healthy,Positive,Toxigenic,FP501,recheck of persistently elevated ALT,45,CS45-FL3,2018
+CS46_AV1,Avian,Chicken,NA,Not applicable,NA,F,F,No,Non-treated,None reported,NA,Healthy,Negative,Negative,Negative,persistently elevated liver enzymes,46,CS46-AV1,2018
+CS47_CN26,Canine,Keeshond,NA,Not known,NA,FS,F,Yes,Non-treated,None reported,Non-treated,Healthy,Negative,Negative,Negative,chronically elevated liver enzymes,47,CS47-CN26,2018
+CS48_EQ11,Equine,Thoroughbred,NA,Not applicable,NA,M,M,No,Non-treated,None reported,NA,Healthy,Negative,Negative,Negative,inguinal hernia repair and castration,48,CS48-EQ11,2018
+CS49_CN27,Canine,Golden Retriever,NA,Not known,NA,MC,M,Yes,Treated,"metronidazole (1/30), clavamox (1/31)","Nitroimidazole, β-Lactams",Healthy,Negative,Negative,Negative,"lethargy, anorexia, and weakness; heart mass with large clot attached, 3rd degree AV block",49,CS49-CN27,2018
+CS50_FL4,Feline,Siamese,NA,Not applicable,NA,FS,F,Yes,Treated,azithromycin (2/1),NA,Healthy,Negative,Negative,Negative,"upper respiratory signs, anorexia",50,CS50-FL4,2018
+CS51_CN28,Canine,Yorkshire Terrier,8 years,5-9,8,FS,F,Yes,Non-treated,none reported,Non-treated,GI condition,Positive,Toxigenic,FP418,"lethargy, abdominal distension; diagnosis:  lymphangiectasia and IBD",51,CS51-CN28,2018
+CS52_CN29,Canine,Bichon Frise,5 years,5-9,5,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,vomiting; diagnosis; High grade stage IVb lymphoma,52,CS52-CN29,2018
+CS53_EQ12,Equine,Quarter Horse,17 years,Not applicable,17,MC,M,Yes,Treated,broad spectrum antibiotics,NA,GI condition,Negative,Negative,Negative,colic; diagnosis: Marked sand enterocolonopathy & Grade III Equine Squamous Gastric Disease,53,CS53-EQ12,2018
+CS54_CN30,Canine,Vizsla,8 years,5-9,8,FS,F,Yes,Treated,doxycycline & amoxicillin,"Tetracyclines, β-Lactams",Healthy,Negative,Negative,Negative,sneezing and rhinitis; diagnosis;suspected fungal infection,54,CS54-CN30,2018
+CS55_CN31,Canine,Cavalier King Charles Spaniel,6 years,5-9,6,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,abdominal distension ;diagnosis : protein losing enteropathy,55,CS55-CN31,2018
+CS56_CN32,Canine,French Bulldog,12 years,≥10,12,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,skin lesions,56,CS56-CN32,2018
+CS57_EQ13,Equine,West Phalian,8 years,Not applicable,8,MC,M,Yes,Treated,broad spectrum antibiotics,NA,GI condition,Negative,Negative,Negative,"colic; diagnosis: Type II Cecal dysmotility, Salmonella Enterocolitis",57,CS57-EQ13,2018
+CS58_CN33,Canine,Belgian Sheepdog,15 years,≥10,15,FS,F,Yes,Treated,amoxicillin,β-Lactams,Healthy,Negative,Negative,Negative,Pancreatitis and Peritonitis,58,CS58-CN33,2018
+CS59_CN34,Canine,Labrador Retriever,11 years,≥10,11,FS,F,Yes,Treated,cefpodoxine,β-Lactams,Healthy,Positive,Toxigenic,F106,urinary tract infection symptoms; diagnosis:,59,CS59-CN34,2018
+CS60_EQ14,Equine,Holsteiner,15 years,Not applicable,15,MC,M,Yes,Treated,"broad spectrum antibiotics, trimethoprim-sulfamethoxazole, enrofloxacin",NA,GI condition,Negative,Negative,Negative,colic diagnois; e.coli and staphylococcus,60,CS60-EQ14,2018
+CS61_CN35,Canine,Yorkshire Terrier,5 years,5-9,5,MC,M,Yes,Treated,doxycycline,Tetracyclines,GI condition,Negative,Negative,Negative,abdominal distension,61,CS61-CN35,2018
+CS62_FL5,Feline,Domestic Shorthair,9 months,Not applicable,0.75,MC,M,Yes,Treated,Metronidazole & Clavamox,NA,Healthy,Negative,Negative,Negative,"flea infestation, tapeworm, UTI",62,CS62-FL5,2018
+CS63_CN36,Canine,Yorkshire Terrier,12 years,≥10,12,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,"cough and bad hearing/eyesite diagnosis; Atypical Addisons, Pancreatitis, IBD",63,CS63-CN36,2018
+CS64_CN37,Canine,Labrador Retriever,10 years,≥10,10,M,M,No,Treated,Doxycycline,Tetracyclines,Healthy,Positive,Toxigenic,F014-020,"History of coughing, nasal discharge and increased respiratory effort; diagnosis: Bronchopneumonia",64,CS64-CN37,2018
+CS65_CN38,Canine,Labrador Retriever,13 years,≥10,13,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,diarrhea,65,CS65-CN38,2018
+CS66_EQ15,Equine,Belgian,5 years,Not applicable,5,F,F,No,Treated,broad spectrum antibiotics,NA,GI condition,Negative,Negative,Negative,Equine Enteric Coronavirus,66,CS66-EQ15,2018
+CS67_CN39,Canine,Beagle,NA,Not known,NA,FS,F,Yes,Treated,unasyn,β-Lactams,GI condition,Positive,Toxigenic,FP310,abdominal distension; diagnosis; intestinal leiomyositis,67,CS67-CN39,2018
+CS68_CN40,Canine,Rat Terrier,6 years,5-9,6,MC,M,Yes,Treated,Mertronidazole  & amoxicillin & marbofloxacin & tylosin,"Nitroimidazole, β-Lactams, Quinolones,",GI condition,Positive,Toxigenic,F014-020,vomiting and diarrhea,68,CS68-CN40,2018
+CS69_CN41,Canine,Golden Retriever,4 years,1-4,4,MC,M,Yes,Treated,Doxycycline,Tetracyclines,Healthy,Negative,Negative,Negative,sneezing and increased difficulty breathing through nose; diagnosis:  Bilateral serous nasal discharge,69,CS69-CN41,2018
+CS70_CN42,Canine,Cane Corso Dog,3 years,1-4,3,F,F,No,Treated,Tylosin,Macrolide,Healthy,Positive,Non-toxigenic,FP484,ongoing radiation therapy,70,CS70-CN42,2018
+CS71_CN43,Canine,Labrador Retriever,13 years,≥10,13,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,Left pelvic limb pain,71,CS71-CN43,2018
+CS72_CN44,Canine,Dachshund Long Haired,7 years,5-9,7,FS,F,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,chronic diarrhea,72,CS72-CN44,2018
+CS73_FL6,Feline,Domestic Shorthair,7 years,Not applicable,7,FS,F,Yes,Treated,unknown type of antibiotic,NA,GI condition,Negative,Negative,Negative,"FIV positive, vomiting; diagnosis : demodex mites",73,CS73-FL6,2018
+CS74_CN45,Canine,Maltese,8 years,5-9,8,MC,M,Yes,Treated,Mertronidazole,Nitroimidazole,GI condition,Positive,Toxigenic,F106,vomiting and diarrhea,74,CS74-CN45,2018
+CS75_EQ16,Equine,Quarter Horse,10 years,Not applicable,10,F,F,No,Treated,antibiotics for colic,NA,GI condition,Negative,Negative,Negative,Colic and urticaria,75,CS75-EQ16,2018
+CS76_CN46,Canine,Mixed Breed Dog,8 years,5-9,8,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Positive,Toxigenic,FP415,Hind leg paraparesis ; diagnosis:intervertebral disc disease,76,CS76-CN46,2018
+CS77_CN47,Canine,Jack Russel Terrier,8 years,5-9,8,MC,M,Yes,Treated,Enrofloxacin & Amoxicillin,"Quinolones, β-Lactams",Healthy,Positive,Toxigenic,Not in database,gastric foreign material,77,CS77-CN47,2018
+CS78_CN48,Canine,Siberian Husky,5 years,5-9,5,MC,M,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,enrollment in the Joint Supplement Clinical Trial as a control dog,78,CS78-CN48,2018
+CS79_CN49,Canine,Doberman Pinscher,7 years,5-9,7,M,M,No,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,tetraparesis,79,CS79-CN49,2018
+CS80_CN50,Canine,Golden Retriever,2 years,1-4,2,M,M,No,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,gulping episodes,80,CS80-CN50,2018
+CS81_CN51,Canine,Jack Russel Terrier,8 years,5-9,8,MC,M,Yes,Treated,Clavamox & Enrofloxacin,"β-Lactams, Quinolones",Healthy,Positive,Toxigenic,F014-020,gastric foreign material,81,CS81-CN51,2018
+CS82_CN52,Canine,German Shepard,2 years,1-4,2,MC,M,Yes,Treated,Tylosin & metronidazole,"Macrolide, Nitroimidazole",GI condition,Negative,Negative,Negative,"IBD, soft stool",82,CS82-CN52,2018
+CS83_EQ17,Equine,Quarter Horse,10 years,Not applicable,10,F,F,No,Treated,excede,NA,GI condition,Negative,Negative,Negative,colic ; diagnosis; Klebsiella pneumonia,83,CS83-EQ17,2018
+CS84_EQ18,Equine,Arabian,13 years,Not applicable,13,M,M,No,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic; diagnosis ; Equine Glandular Gastric Disease: grade II/IV,84,CS84-EQ18,2018
+CS85_EQ19,Equine,Appaloosa,22 years,Not applicable,22,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,diagnosis; glaucoma,85,CS85-EQ19,2018
+CS86_EQ20,Equine,Quarter Horse,10 years,Not applicable,10,F,F,No,Treated,metronidazole & Excede & Enrofloxacin,NA,GI condition,Negative,Negative,Negative,colic,86,CS86-EQ20,2018
+CS87_EQ21,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,87,CS87-EQ21,2018
+CS88_EQ22,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,88,CS88-EQ22,2018
+CS89_EQ23,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,89,CS89-EQ23,2018
+CS90_EQ24,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,90,CS90-EQ24,2018
+CS91_EQ25,Equine,Thoroughbred,8 years,Not applicable,8,F,F,No,Treated,gentamicin,NA,GI condition,Negative,Negative,Negative,diarrhea and fever,91,CS91-EQ25,2018
+CS92_CN53,Canine,Doberman Pinscher,6 years,5-9,6,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,chronic diarrhea,92,CS92-CN53,2018
+CS93_CN54,Canine,Dachshund,13 years,≥10,13,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,intestinal distension; diagnosis; Coccidiosis,93,CS93-CN54,2018
+CS94_EQ26,Equine,Quarter Horse,10 years,Not applicable,10,F,F,No,Treated,"enrofloxacin, metronidazole, and Excede",NA,GI condition,Negative,Negative,Negative,colic,94,CS94-EQ26,2018
+CS95_CN55,Canine,Border Collie,9 months,<1,0.75,MC,M,Yes,Treated,"Cefpodoxime, Azithromyocin, Unasyn, Enrofloxacin","β-Lactams, Macrolide, β-Lactams, Quinolones",Healthy,Negative,Negative,Negative,evaluation of a pleural effusion,95,CS95-CN55,2018
+CS96_CN56,Canine,American Cocker Spaniel,12 years,≥10,12,FS,F,Yes,Treated,metronidazole & Enrofloxacin,"Nitroimidazole, Quinolones",GI condition,Negative,Negative,Negative,diarrhea and lethargy,96,CS96-CN56,2018
+CS97_EQ27,Equine,Donkey,1 year,Not applicable,1,F,F,No,Treated,potassium penicillin and enrofloxacin,NA,GI condition,Positive,Non-toxigenic,F010,colic,97,CS97-EQ27,2018
+CS98_CN57,Canine,Chow Chow,16 years,≥10,16,FS,F,Yes,Treated,Unasyn,β-Lactams,Healthy,Positive,Toxigenic,Not in database,"anorexia, anemia",98,CS98-CN57,2018
+CS99_CN58,Canine,Black and Tan Coonhound,1 year,1-4,1,M,M,No,Treated,metronidazole,Nitroimidazole,Healthy,Negative,Negative,Negative,regurgitation ; diagnosis; foreign material in stomach,99,CS99-CN58,2018
+CS100_CN59,Canine,Black and Tan Coonhound,1 year,1-4,1,M,M,No,Treated,metronidazole,Nitroimidazole,Healthy,Negative,Negative,Negative,regurgitation ; diagnosis; foreign material in stomach,100,CS100-CN59,2018
+CS101_CN60,Canine,Chow Chow,7 years,5-9,7,FS,F,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,Change in urine and bowel patterns,101,CS101-CN60,2018
+CS102_FL7,Feline,Maine Coon cat,2 years,Not applicable,2,FS,F,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,"vomiting and hematochezia, diagnosis; chronic inflammation",102,CS102-FL7,2018
+CS103_CN61,Canine,Labrador Retriever,9 years,5-9,9,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,diagnosis:Large Cell Gastrointestinal Lymphoma & hookworm,103,CS103-CN61,2018
+CS104_EQ28,Equine,Hanoverian,7 years,Not applicable,7,F,F,No,Non-treated,none reported,NA,GI condition,Positive,Non-toxigenic,Not sequenced,colic,104,CS104-EQ28,2018
+CS105_EQ29,Equine,Arabian,4 days,Not applicable,0.010958904109589041,F,F,No,Treated,"amikacin, ampicillin, and metronizadole",NA,GI condition,Negative,Negative,Negative,"hemorrhagic diarrhea, diagnosis;Clostridium difficile",105,CS105-EQ29,2018
+CS106_CN62,Canine,NA,NA,Not known,NA,Not known,Not known,Not known,Not known,NA,NA,Not known,Negative,Negative,Negative,NA,106,CS106-CN62,2018
+CS107_EQ30,Equine,Belgian,4 years,Not applicable,4,F,F,No,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,107,CS107-EQ30,2018
+CS108_CN63,Canine,Miniature Pinscher,10 years,≥10,10,MC,M,Yes,Treated,metronidazole,Nitroimidazole,Healthy,Positive,Toxigenic,FP313,seizure like activity,108,CS108-CN63,2018
+CS109_CN64,Canine,Boykin Spaniel,8 years,5-9,8,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Positive,Toxigenic,F014-020, investigation of an adrenal mass and proteinuria,109,CS109-CN64,2018
+CS110_CN65,Equine,Thoroughbred,31 years,Not applicable,31,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,110,CS110-CN65,2018
+CS111_CN66,Canine,Mixed Breed dog,10 years,≥10,10,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Positive,Toxigenic,FP310,"Vomiting and Nausea, suspect IBD",111,CS111-CN66,2018
+CS113_CN67,Canine,French Bulldog,8 months,<1,0.6666666666666666,M,M,No,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,vomiting,113,CS113-CN67,2018
+CS114_CN68,Canine,American Staffordshire Terrier,11 years,≥10,11,M,M,No,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,diarrhea,114,CS114-CN68,2018
+CS115_EQ31,Equine,Quarter Horse,7 years,Not applicable,7,F,F,No,Treated,metronidazole,NA,GI condition,Negative,Negative,Negative,diagnosis; Perilaryngeal abscess and Right dorsal colitis,115,CS115-EQ31,2018
+CS116_CN69,Canine,Hound,11 months,<1,0.9166666666666666,M,M,No,Treated,metronidazole,Nitroimidazole,GI condition,Positive,Toxigenic,FP310,rectal mass,116,CS116-CN69,2018
+CS117_CN70,Canine,Pointer,3 years,1-4,3,FS,F,Yes,Treated,metronidazole & tylosin,"Nitroimidazole, Macrolide",GI condition,Negative,Negative,Negative,vomiting and diarrhea,117,CS117-CN70,2018
+CS118_EQ32,Equine,Thoroughbred,19 years,Not applicable,19,MC,M,Yes,Treated," Trimethoprim , gentamicin, metronidazole",NA,GI condition,Positive,Toxigenic,FP407,colic,118,CS118-EQ32,2018
+CS119_CN71,Canine,Beagle,13 years,≥10,13,FS,F,Yes,Treated,doxycyclin,Tetracyclines,Healthy,Negative,Negative,Negative,coughing; diagnosis; Mitral valve endocardiosis,119,CS119-CN71,2018
+CS120_CN72,Canine,West Highland White Terrier,6 years,5-9,6,MC,M,Yes,Treated,enrofloxacin,Quinolones,Healthy,Positive,Toxigenic,F106,coughing; diagnosis;  interstitial lung disease,120,CS120-CN72,2018
+CS121_EQ33,Equine,Arabian,6 years,Not applicable,6,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,121,CS121-EQ33,2018
+CS122_CN73,Canine,Cavalier King Charles Spaniel,10 years,≥10,10,FS,F,Yes,Treated,metronidazole,Nitroimidazole,GI condition,Positive,Non-toxigenic,F010,diarrhea & hyporexia diagnosis; Suspected IBD,122,CS122-CN73,2018
+CS123_CN74,Canine,Australian Sheperd,6 years,5-9,6,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,elevated ALP and diarrhea,123,CS123-CN74,2018
+CS124_CN75,Canine,Chihuahua,5 years,5-9,5,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,"recheck of panhypoproteinemia, bicavitary effusion, chronic hyporexia",124,CS124-CN75,2018
+CS125_CN76,Canine,Beagle,13 years,≥10,13,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,cough; diagnosis- mitral valve endocardiosis,125,CS125-CN76,2018
+CS126_CN77,Canine,French Bulldog,12 years,≥10,12,FS,F,Yes,Treated,"clavamox, metronidazole","β-Lactams, Nitroimidazole",GI condition,Negative,Negative,Negative,"bloody diarrhea, adrenal mass",126,CS126-CN77,2018
+CS127_CN78,Canine,Rat Terrier,7 years,5-9,7,FS,F,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,protein losing enteropathy,127,CS127-CN78,2018
+CS128_EQ34,Equine,Quarter Horse,2 days,Not applicable,0.005479452054794521,M,M,No,Treated,"Ceftiofur, metronidazole, potassium penicillin",NA,GI condition,Negative,Negative,Negative,diarrhea and reluctance to nurse,128,CS128-EQ34,2018
+CS129_EQ35,Equine,Selle Francais horse,14 years,Not applicable,14,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,129,CS129-EQ35,2018
+CS130_CN79,Canine,West Highland White Terrier,14 years,≥10,14,MC,M,Yes,Treated,doxycycline,Tetracyclines,GI condition,Positive,Toxigenic,FP313,"lethargic and sleeping more, initial exam found matted fecal material (diarrhea)",130,CS130-CN79,2018
+CS131_CN80,Canine,American Staffordshire Terrier,12 years,≥10,12,FS,F,Yes,Treated,tylosin,Macrolide,GI condition,Negative,Negative,Negative,"Diagnosed with ITP in 2016; Hospitalized for diarrhea, inappetance, vomiting, weakness and lethargy",131,CS131-CN80,2018
+CS132_CN81,Canine,Mixed Breed dog,8 years,5-9,8,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,"diarrhea, vomitting, distention of the duodenum",132,CS132-CN81,2018
+CS133_EQ36,Equine,Paint,9 years,Not applicable,9,F,F,No,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,"Fever of unknown origin, leukopenia, hypoproteinemia",133,CS133-EQ36,2018
+CS134_EQ37,Equine,Quarter Horse,2 months,Not applicable,0.16666666666666666,F,F,No,Treated, Trimethoprim Sulfa,NA,Healthy,Negative,Negative,Negative,traumatic eye injury resulting in eye removal,134,CS134-EQ37,2018
+CS135_EQ38,Equine,Quarter Horse,7 years,Not applicable,7,MC,M,Yes,Treated, Trimethoprim Sulfa,NA,Healthy,Negative,Negative,Negative,right-sided laryngeal hemiplegia,135,CS135-EQ38,2018
+CS136_EQ39,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,136,CS136-EQ39,2018
+CS137_EQ40,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,137,CS137-EQ40,2018
+CS138_EQ41,Equine,Appaloosa,16 years,Not applicable,16,MC,M,Yes,Treated,"NeoPolyGram ophthalmic solution, Ofloxacin,  Metronidazole,",NA,Healthy,Negative,Negative,Negative,glaucoma,138,CS138-EQ41,2018
+CS139_EQ42,Equine,Donkey,1 month,Not applicable,0.08333333333333333,M,M,No,Treated,Chloramphenicol,NA,GI condition,Positive,Toxigenic,F078-126,"diarrhea and lethargy; diagnosis: thrombocytopenia, metabolic acidosis",139,CS139-EQ42,2018
+CS140_EQ43,Equine,National Spotted Saddle Horse,7 years,Not applicable,7,F,F,No,Treated,Metronidazole,NA,Healthy,Negative,Negative,Negative,"colic, fever, and lethargy",140,CS140-EQ43,2018
+CS141_EQ44,Equine,NA,NA,Not applicable,NA,Not known,Not known,Not known,Not known,No discharge available,NA,Healthy,Negative,Negative,Negative,Routine wellness exam,141,CS141-EQ44,2018
+CS142_EQ45,Equine,Thoroughbred,9 days,Not applicable,0.024657534246575342,F,F,No,Treated,Chloramphenicol,NA,GI condition,Negative,Negative,Negative,"colic, dull mentation, and watery diarrhea; diagnosis for diarrhea:  Clostridium perfringens enterocolitis",142,CS142-EQ45,2018
+CS143_CN82,Canine,German Sheperd,3 years,1-4,3,FS,F,Yes,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,chronic diarrhea and weight loss,143,CS143-CN82,2018
+CS144_CN83,Canine,Hound,2 years,1-4,2,MC,M,Yes,Non-treated,None Reported,Non-treated,Healthy,Negative,Negative,Negative,annual wellness exam,144,CS144-CN83,2018
+CS145_EQ46,Equine,Appaloosa,16 years,Not applicable,16,MC,M,Yes,Treated,metronidazole,NA,Healthy,Negative,Negative,Negative,glaucoma,145,CS145-EQ46,2018
+CS146_EQ47,Equine,Walking Horse,NA,Not applicable,NA,MC,M,Yes,Treated,Enrofloxacin.,NA,GI condition,Positive,Toxigenic,F002,colic,146,CS146-EQ47,2018
+CS147_EQ48,Equine,Morgan,25 years,Not applicable,25,Not known,Not known,Not known,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic and previously diagnosed gastric ulcers,147,CS147-EQ48,2018
+CS148_CN84,Canine,Welsh Terrier,7 years,5-9,7,MC,M,Yes,Treated,Cefpodoxime,β-Lactams,GI condition,Negative,Negative,Negative,recheck after history of atopic dermatitis and recent diarrhea,148,CS148-CN84,2018
+CS149_CN85,Canine,American Cocker Spaniel,13 years,≥10,13,FS,F,Yes,Treated,"Unasyn, Clavamox",β-Lactams,GI condition,Negative,Negative,Negative,"diarrhea, poor muscle condition, intestinal muscularis thickening",149,CS149-CN85,2018
+CS150_CN86,Equine,Dutch Warmblood horse breed,7 years,Not applicable,7,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,"persistant, intermittent fevers",150,CS150-CN86,2018
+CS151_CN87,Canine,Mixed Breed dog,11 years,≥10,11,MC,M,Yes,Treated,"Clavamox, Metronidazole, Enrofloxacin","β-Lactams, Nitroimidazole, Quinolones",Healthy,Positive,Non-toxigenic,F087,respiratory distress and coughing,151,CS151-CN87,2018
+CS152_FL8,Canine,Maltese,11 years,≥10,11,MC,M,Yes,Treated,Doxycycline,Tetracyclines,Healthy,Negative,Negative,Negative, Fever and lethargy; diagnosis: Immune Mediated Polyarthritis,152,CS152-FL8,2018
+CS153_FL9,Feline,Domestic Shorthair,3 years,Not applicable,3,MC,M,Yes,Treated,Convenia ,NA,Healthy,Negative,Negative,Negative,wobbly and weak gait; small wound found,153,CS153-FL9,2018
+CS154_CN88,Canine,Cavalier King Charles Spaniel,8 years,5-9,8,MC,M,Yes,Non-treated,none reported,Non-treated,Healthy,Positive,Toxigenic,F106,"chronic cough, heart murmur, left atrial enlargement",154,CS154-CN88,2018
+CS155_FL10,Feline,Domestic Shorthair,29 days,Not applicable,0.07945205479452055,M,M,No,Treated,"Clavamox, Clindamycin,",NA,Healthy,Positive,Toxigenic,FP310,subcutaneous abscess in left elbow,155,NA,Not sequenced
+CS156_EQ49,Equine,Thoroughbred,24 years,Not applicable,24,F,F,No,Treated,"penicillin, gentamicin",NA,Healthy,Negative,Negative,Negative,evaluation of wound across the right hind pastern,156,CS156-EQ49,2018
+CS157_FL11,Feline,American Domestic Shorthair,6 years,Not applicable,6,MC,M,Yes,Treated,metronidazole,NA,GI condition,Negative,Negative,Negative,"pancreatitis, diarrhea, vomitting, and colitis",157,CS157-FL11,2018
+CS158_CN89,Canine,American Staffordshire Terrier,2 years,1-4,2,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,158,CS158-CN89,2018
+CS159_EQ50,Equine,Saddlebred,18 years,Not applicable,18,MC,M,Yes,Treated,k-pen and gentamicin,NA,GI condition,Negative,Negative,Negative,colic; diagnosis: Strangulating lipoma,159,CS159-EQ50,2018
+CS160_EQ51,Equine,Warm Blood,27 years,Not applicable,27,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,160,CS160-EQ51,2018
+CS161_CN90,Canine,Yorkshire Terrier,11 years,≥10,11,MC,M,Yes,Non-treated,none reported,Non-treated,GI condition,Positive,Non-toxigenic,F010,"vomitting, hyporexia, and intermittent soft stool",161,CS161-CN90,2018
+CS162_EQ52,Equine,Friesian,7 years,Not applicable,7,F,F,No,Treated,Chloramphenicol,NA,Healthy,Negative,Negative,Negative,partial failure of passive transfer of immunity,162,CS162-EQ52,2018
+CS163_EQ53,Equine,Friesian,7 years,Not applicable,7,F,F,No,Non-treated,none reported,NA,GI condition,Positive,Toxigenic,F106,salmonella positive,163,CS163-EQ53,2018
+CS164_FL12,Feline,Himalayan,3 months,Not applicable,0.25,F,F,No,Treated,"Unasyn, Doxycycline, Pradofloxacin",NA,GI condition,Negative,Negative,Negative,"lethargy and vomiting, suspected kidney injury",164,NA,Not sequenced
+CS165_CN91,Canine,Siberian Husky,5 years,5-9,5,MC,M,Yes,Non-treated,none reported,Non-treated,Healthy,Positive,Toxigenic,F014-020," chronic mucoid left nasal discharge, sneezing, and coughing",165,CS165-CN91,2018
+CS166_CN92,Canine,Australian Cattle Dog,1 year,1-4,1,F,F,No,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,chronic nasal discharge,166,CS166-CN92,2018
+CS167_FL13,Feline,Domestic Shorthair,3 years,Not applicable,3,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,weight and hair loss,167,CS167-FL13,2018
+CS168_EQ54,Equine,Quarter Horse,29 years,Not applicable,29,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,168,CS168-EQ54,2018
+CS169_CN93,Canine,Mixed Breed dog,15 years,≥10,15,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,"Recheck of swollen left hindlimb, weakness and ataxia in hindlimbs",169,CS169-CN93,2018
+CS170_CN94,Canine,Greyhound,3 months,<1,0.25,F,F,No,Treated,"Cefazolin, Metronidazole","β-Lactams, Nitroimidazole",Healthy,Negative,Negative,Negative,"Fever, ataxia, abnormal mentation, abnormal gait",170,CS170-CN94,2018
+CS171_FL14,Feline,Domestic Shorthair,8 years,Not applicable,8,FS,F,Yes,Treated,"azithromycin, ciprofloxacin, Clavamox, atovaquone",NA,GI condition,Negative,Negative,Negative,diarrhea and lethargy,171,CS171-FL14,2018
+CS172_EQ55,Equine,Thoroughbred,13 years,Not applicable,13,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,172,CS172-EQ55,2018
+CS173_FL15,Feline,Bengal,17 years,Not applicable,17,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,Recheck examination for chronic kidney disease,173,CS173-FL15,2018
+CS174_EQ56,Equine,Shetland Pony,20 years,Not applicable,20,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,potential colic,174,CS174-EQ56,2018
+CS175_EQ57,Equine,Thoroughbred,4 years,Not applicable,4,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,colic,175,CS175-EQ57,2018
+CS176_CN95,Canine,Mixed Breed dog,6 months,<1,0.5,M,M,No,Treated,metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative," Abdominal distension, hair loss",176,CS176-CN95,2018
+CS177_CN96,Canine,French Bulldog,12 years,≥10,12,FS,F,Yes,Treated,marbofloxacin,Quinolones,Healthy,Negative,Negative,Negative,vulvar and ocular discharge,177,CS177-CN96,2018
+CS178_CN97,Canine,Australian Sheperd,4 years,1-4,4,F,F,No,Non-treated,none reported,Non-treated,GI condition,Negative,Negative,Negative,chronic vomitting and diarrhea; diagnosis: giardia,178,CS178-CN97,2018
+CS179_CN98,Canine,Labrador Retriever,9 years,5-9,9,MC,M,Yes,Treated,metronidazole post sample,Nitroimidazole,GI condition,Positive,Non-toxigenic,FP310,diarrhea and anemia,179,CS179-CN98,2018
+CS180_CN99,Canine,Havanese Dog,6 years,5-9,6,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,"soft, bloody stool",180,CS180-CN99,2018
+CS181_CN100,Canine,West Highland White Terrier,8 years,5-9,8,MC,M,Yes,Treated,Doxycycline,Tetracyclines,Healthy,Negative,Negative,Negative, protein losing nephropathy,181,CS181-CN100,2018
+CS182_CN101,Canine,Chow Chow,8 years,5-9,8,FS,F,Yes,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,recheck and bloodwork for liver tests,182,CS182-CN101,2018
+CS183_EQ58,Equine,Walking Horse,3 years,Not applicable,3,F,F,No,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,acute colic,183,CS183-EQ58,2018
+CS184_EQ59,Equine,Selle Francais horse,18 years,Not applicable,18,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,decreased manure output and a history of neutropenia,184,CS184-EQ59,2018
+CS185_CN102,Canine,Hound,5 years,5-9,5,MC,M,Yes,Treated,"Unasyn, Enrofloxacin, Clindamycin","β-Lactams, Quinolones, Lincosamides",Healthy,Positive,Toxigenic,Not in database,"Respiratory distress, chronic cough; diagnosis: pneumonia",185,CS185-CN102,2018
+CS186_CN103,Canine,Lhasa Apso,15 years,≥10,15,Not known,Not known,Not known,Non-treated,none reported,Non-treated,GI condition,Positive,Toxigenic,Not sequenced,"prolonged sneezing fits with nasal discharge; diagnosis: chronic dry cough, skin allergies, dental disease",186,CS186-CN103,2018
+CS187_CN104,Canine,Boston Terrier,11 years,≥10,11,MC,M,Yes,Treated,Metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,watery diarrhea and weight loss,187,CS187-CN104,2018
+CS188_FL16,Feline,Domestic Shorthair,8 years,Not applicable,8,MC,M,Yes,Non-treated,none reported,NA,GI condition,Negative,Negative,Negative,chronic diarrhea,188,CS188-FL16,2018
+CS189_FL17,Feline,American Domestic Shorthair,1 year,Not applicable,1,FS,F,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative,annual wellness exams,189,CS189-FL17,2018
+CS190_FL18,Feline,American Domestic Shorthair,9 years,Not applicable,9,FS,F,Yes,Treated,Metronidazole,NA,GI condition,Negative,Negative,Negative,diarrhea,190,CS190-FL18,2018
+CS191_EQ60,Equine,Hanoverian,4 years,Not applicable,4,F,F,No,Treated,metronidazole,NA,Healthy,Negative,Negative,Negative,limb edema,191,CS191-EQ60,2018
+CS192_EQ61,Equine,Rocky Mountain Horse,11 years,Not applicable,11,MC,M,Yes,Treated,neopolydex,NA,Healthy,Negative,Negative,Negative,cloudiness in left eye; Multiple Congenital Ocular Anomalies,192,CS192-EQ61,2018
+CS193_CN105,Canine,Chihuahua,12 years,≥10,12,M,M,No,Non-treated,none reported,Non-treated,Healthy,Negative,Negative,Negative,cough and mild kidney disease,193,CS193-CN105,2018
+CS194_CN106,Canine,Labrador Retriever,3 years,1-4,3,F,F,No,Treated,metronidazole,Nitroimidazole,Healthy,Negative,Negative,Negative,"hematemesis, hematochezia, and pain/stiff gait",194,CS194-CN106,2018
+CS195_EQ62,Equine,Appendix Quarter Horse,14 years,Not applicable,14,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,195,CS195-EQ62,2018
+CS196_EQ63,Equine,Quarter Horse,25 years,Not applicable,25,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,196,CS196-EQ63,2018
+CS197_EQ64,Equine,Thoroughbred,20 years,Not applicable,20,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,SAME CASE,197,CS197-EQ64,2018
+CS198_CN107,Canine,Labrador Retriever,3 years,1-4,3,F,F,No,Treated,metronidazole,Nitroimidazole,GI condition,Negative,Negative,Negative,"hematemesis, hematochezia, and pain/stiff gait",198,CS198-CN107,2018
+CS200_EQ65,Equine,Irish Draught,13 years,Not applicable,13,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative, Bilateral Ethmoid Hematoma and Fungal granulomatous rhinitis,200,NA,Not sequenced
+CS201_EQ66,Equine,Belgian,13 years,Not applicable,13,F,F,No,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,201,CS201-EQ66,2018
+CS202_EQ67,Equine,Dutch Warmblood,15 years,Not applicable,15,MC,M,Yes,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,No discharge available,202,CS202-EQ67,2018
+CS203_EQ68,Equine,Dutch Warmblood,20 years,Not applicable,20,F,F,No,Not known,No discharge available,NA,Not known,Negative,Negative,Negative,NA,203,CS203-EQ68,2018
+CS203_EQ,Equine,Irish Draught,13 years,Not applicable,13,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative, Bilateral Ethmoid Hematoma and Fungal granulomatous rhinitis,204,NA,Not sequenced
+CS205_EQ69,Equine,Irish Draught,13 years,Not applicable,13,MC,M,Yes,Non-treated,none reported,NA,Healthy,Negative,Negative,Negative, Bilateral Ethmoid Hematoma and Fungal granulomatous rhinitis,205,CS205-EQ69,2018
