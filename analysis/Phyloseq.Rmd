@@ -18,9 +18,7 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r}
-library(dada2); packageVersion("dada2")
 library("phyloseq")
-setwd("C:/Users/rthanis/Desktop/16SsequencingForMS")
 library(ggplot2)
 packageVersion("ggplot2")
 library(vegan)
@@ -29,8 +27,9 @@ library(lattice)
 packageVersion("vegan")
 library(MASS)
 packageVersion("MASS")
-path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
-ps <- readRDS(file.path(path, "ps.RDS"))
+library(tidyverse)
+path <- here::here()
+ps <- readRDS(file.path(path, "results", "ps.RDS"))
 ```
 
 ## Including Plots
@@ -40,10 +39,20 @@ You can also embed plots, for example:
 ```{r}
 ps.prop<-transform_sample_counts(ps, function(x) 1000 * x/(sum(x)))
 ords.nmds.bray<-ordinate(ps.prop,method = "NMDS",distance = "bray")
-plot_ordination(ps.prop,ords.nmds.bray,color = "Species",shape = "CD") + 
+```
+```{r}
+plot_ordination(ps.prop,ords.nmds.bray, color = "Species",shape = "CD", type="samples") + 
   geom_point(size=2.5) + 
   scale_color_manual(values=c( "#DA8D06","#000000","#489BE5", "#F53112","#AE43A7", "#336600")) +
   scale_shape_manual(values = c(19,2))
+```
+```{r}
+plot_ordination(ps.prop,ords.nmds.bray, color = "Phylum", shape = "CD", type="taxa") + 
+  geom_point(size=2.5) + 
+  scale_shape_manual(values = c(19,2))
+```
+
+```{r}
 df = as(sample_data(ps.prop),"data.frame")
 df_taxa<-as(otu_table(ps.prop), "matrix")
 betad<-betadiver(df_taxa, "z")
@@ -54,20 +63,35 @@ TukeyHSD(mod)
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 ```{r}
 (ps_Canine <- subset_samples(ps, Species == "Canine"))
-saveRDS(ps_Canine ,"C:/Users/rthanis/Desktop/16SsequencingForMS/ps_Canine.RDS")
-ps_Canine
 ps.prop_Canine<-transform_sample_counts(ps_Canine, function(x) 1000 * x/(sum(x)))
 ords.nmds.bray<-ordinate(ps.prop_Canine,method = "NMDS",distance = "bray")
-df = as(sample_data(ps.prop_Canine),"data.frame")
-df_taxa<-as(otu_table(ps.prop_Canine), "matrix")
-betad<-betadiver(df_taxa, "z")
-mod<-with(df,betadisper(betad,CD))
-TukeyHSD(mod)
+# df = as(sample_data(ps.prop_Canine),"data.frame")
+# df_taxa<-as(otu_table(ps.prop_Canine), "matrix")
+# betad<-betadiver(df_taxa, "z")
+# mod<-with(df,betadisper(betad,CD))
+# TukeyHSD(mod)
 ```
 
 ```{r}
-plot_ordination(ps.prop_Canine,ords.nmds.bray,shape = "CD",color = "Species") + scale_color_manual(values= "#489BE5") + geom_point(size=2.5) + scale_shape_manual(values = c(19,2))
+p <- plot_ordination(ps.prop_Canine,ords.nmds.bray,shape = "CD",color = "Species") + scale_color_manual(values= "#489BE5") + geom_point(size=2.5) + scale_shape_manual(values = c(19,2))
+p
 ```
+```{r}
+tb <- as_tibble(p$data) %>%
+  mutate(Sample = sample_names(ps.prop_Canine))
+tb
+to_keep <- tb %>%
+  filter(NMDS2 < 1.5) %>%
+  {.$Sample}
+ps.prop_Canine0 <- prune_samples(to_keep, ps.prop_Canine)
+ords.nmds.bray0 <- ordinate(ps.prop_Canine0, method = "NMDS",distance = "bray")
+```
+```{r}
+p <- plot_ordination(ps.prop_Canine0, ords.nmds.bray0, shape = "CD", color = "Ab") + geom_point(size=2.5) + scale_shape_manual(values = c(19,2))
+p
+```
+
+
 ```{r}
 path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
 ps.prop_CanineAb <- readRDS(file.path(path, "ps.prop_CanineAb.RDS"))

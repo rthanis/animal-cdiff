@@ -22,9 +22,9 @@ library("DESeq2")
 packageVersion("DESeq2")
 library("ggplot2")
 packageVersion("ggplot2")
-path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
-ps_Canine <- readRDS(file.path(path, "ps_Canine.RDS"))
-ps_Canine
+library(tidyverse)
+path <- here::here()
+ps <- readRDS(file.path(path, "results", "ps_Canine.RDS"))
 ```
 
 ## After reading in the phyloseq object, removing any taxa which are present in less than 5 samples. Also filtering for any samples with less than 1000 reads.

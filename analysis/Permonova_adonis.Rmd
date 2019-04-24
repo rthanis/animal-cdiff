@@ -18,12 +18,26 @@ library(phyloseq)
 library(ggplot2)
 library(vegan)
 library(MASS)
-setwd("C:/Users/rthanis/Desktop/16SsequencingForMS")
-path <- "C:/Users/rthanis/Desktop/16SsequencingForMS"
-ps.prop_Canine <- readRDS(file.path(path, "ps.prop_Canine.RDS"))
+library(tidyverse)
+path <- here::here()
+ps.prop_Canine <- readRDS(file.path(path, "results", "ps.prop_Canine.RDS"))
 ps.prop_Canine
-ps.prop_Equine <- readRDS(file.path(path, "ps.prop_Equine.RDS"))
+ps.prop_Equine <- readRDS(file.path(path, "results", "ps.prop_Equine.RDS"))
 ps.prop_Equine
+```
+
+```{r}
+#Calculation of the distances using the Bray method
+bray_Canine<-phyloseq::distance(ps.prop_Canine,method = "bray")
+#Creation of dataframes for adonis
+df_Canine<-data.frame(sample_data(ps.prop_Canine))
+```
+
+```{r}
+adonis2(bray_Canine ~ CD + Ab + GI + Age + CD:Ab, data=df_Canine)
+```
+
+```{r}
 #Calculation of the distances using the Bray method
 bray_Canine<-phyloseq::distance(ps.prop_Canine,method = "bray")
 bray_Equine<-phyloseq::distance(ps.prop_Equine,method = "bray")
