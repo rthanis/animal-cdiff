@@ -1,0 +1,144 @@
+---
+title: "C.diff prevalence"
+author: "Rajani"
+date: "March 13, 2019"
+output: html_document
+---
+
+```{r}
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+
+ps <- readRDS(file.path(here::here(), "results", "ps.RDS"))
+```
+
+#Subset sample to remove Avian and Alpaca
+
+```{r }
+ps <- subset_samples(ps,  Species %in% c("Canine", "Feline", "Equine", "Ovine"))
+```
+
+#Clean up the sample data by 1) rename `Species` to `Host_species`, 2) making
+all "NA"'s into `NA`'s, getting the year from `ID`, and using a consistent
+letter case. Also add the total read count.
+
+
+```{r}
+sam <- sample_data(ps) %>%
+    # Caution, as_tibble resorts the samples by sample name
+    as_tibble(rownames = "Sample") %>%
+    rename(Host_species = Species) %>%
+    mutate_all(~ifelse(. == "NA", NA, .)) %>%
+    mutate(Year = ifelse(str_detect(ID, "_"), 2017, 2016)) %>%
+    mutate_at(vars(Ab, GI, Toxigenic, Ribotype), str_to_title)
+samdf <- sam %>% 
+    select(-Sample, -ID) %>%
+    as.data.frame
+rownames(samdf) <- sam$Sample
+samdf <- sample_data(samdf)
+sample_data(ps) <- samdf
+sample_data(ps)$Sample_sum = sample_sums(ps)
+```
+
+#Get rid of the two very low-read samples
+```{r}
+ps <- subset_samples(ps, Sample_sum > 1000)
+```
+# Making Taxonomy table with ASV sequences
+```{r}
+tax <- tax_table(ps) %>%
+    as("matrix") %>%
+    tibble::as_tibble(rownames = "SV")
+sequences <- refseq(ps) %>%
+    as("character") %>%
+    enframe("SV", "Sequence")
+tax <- left_join(tax, sequences, by = "SV")
+tax
+```
+# Taxonomy assignment statistics
+
+What fraction of reads were assigned at each rank?
+```{r}
+# pstb <- speedyseq::psmelt(ps) %>%
+pstb <- psmelt(ps) %>%
+    as_tibble %>%
+    rename(SV = OTU)
+tbl <- pstb %>%
+    gather("Rank", "Name", rank_names(ps)) %>%
+    group_by(Rank) %>%
+    summarize(
+        Reads_classified = sum(Abundance * !is.na(Name)),
+        Reads_total = sum(Abundance)
+    ) %>%
+    mutate(Frac_classified = Reads_classified / Reads_total) %>%
+    # Sort the table by ranks
+    mutate(Rank = factor(Rank, rank_names(ps))) %>%
+    arrange(Rank)
+tbl
+
+```
+
+What Clostridioides were found?
+```{r}
+tax %>%
+    filter(Genus == "Clostridioides") %>%
+    select(SV, Genus:Species)
+```
+
+Three SVs were identifid as C diff becuase they were exact matches to 16s
+sequences in the Silva species database, but the other wasn't. 
+We can try BLASTing it's sequence
+```{r}
+refseq(ps)$SV843 %>% as("character")
+# [1] "TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTTCAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGTAAGACTTGAGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGGAACACCAGTTGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACAGG"
+# Use in Blastn against 16S db
+```
+
+The top hits are
+```
+￼Select seq NR_113132.1	Peptoclostridium difficile strain JCM 1296 16S ribosomal RNA gene, partial sequence	455	455	100%	6e-128	99%	NR_113132.1
+￼Select seq NR_112172.1	Peptoclostridium difficile strain ATCC 9689 16S ribosomal RNA gene, partial sequence	455	455	100%	6e-128	99%	NR_112172.1
+```
+The closest hit is to C diff strains, but there is a 2 bp mismatch from these
+C diff strains, so we can't say that SV843 is C diff. Rather, it seems to be a
+from an uncharacterized sister species.
+
+
+Compare Clostridioides SVs to CD lab test. First, get a dataframe for plotting
+```{r}
+tb <- pstb %>% 
+    filter(Genus == "Clostridioides") %>%
+    filter(Abundance > 0)
+tb <- tb %>%
+    rename(Count = Abundance) %>%
+    mutate(Proportion = Count / Sample_sum)
+```
+
+
+```{r}
+ggplot(tb, aes(Host_species, Count, color = SV)) +
+    geom_quasirandom() +
+    scale_y_log10() +
+    facet_wrap(~CD) +
+    labs(x = "Host species", y = "Count") + 
+    theme_bw() 
+ggsave(file.path(here::here(), "figures", "C.diffPrevalenceASV.pdf"))
+# For Proportions, use  
+# ggplot(tb, aes(Host_species, Proportion, color = SV)) +
+
+```
+
+```{r}
+p1 <- ggplot(tb, aes(Host_species, Count, color = SV)) + 
+    geom_quasirandom() +
+    facet_wrap(~CD) +
+    scale_color_manual(values = colors.host_species) +
+    scale_y_log10() + 
+    theme_bw() 
+ggsave(file.path(here::here(), "figures", "C.diffPrevalenceASV.pdf"))
+```
+
+
+
+
