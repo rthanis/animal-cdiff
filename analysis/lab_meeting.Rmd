@@ -1,0 +1,380 @@
+
+
+# Setup
+
+```{r}
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+
+ps <- readRDS(file.path(here::here(), "results", "ps.RDS"))
+```
+
+Clean up the sample data by 1) rename `Species` to `Host_species`, 2) making
+all "NA"'s into `NA`'s, getting the year from `ID`, and using a consistent
+letter case. Also add the total read count.
+```{r}
+sam <- sample_data(ps) %>%
+    # Caution, as_tibble resorts the samples by sample name
+    as_tibble(rownames = "Sample") %>%
+    rename(Host_species = Species) %>%
+    mutate_all(~ifelse(. == "NA", NA, .)) %>%
+    mutate(Year = ifelse(str_detect(ID, "_"), 2017, 2016)) %>%
+    mutate_at(vars(Ab, GI, Toxigenic, Ribotype), str_to_title)
+samdf <- sam %>% 
+    select(-Sample, -ID) %>%
+    as.data.frame
+rownames(samdf) <- sam$Sample
+samdf <- sample_data(samdf)
+sample_data(ps) <- samdf
+sample_data(ps)$Sample_sum = sample_sums(ps)
+```
+
+Get rid of the two very low-read samples
+```{r}
+# qplot(sample_sums(ps)) + geom_vline(xintercept = 1000)
+ps <- subset_samples(ps, Sample_sum > 1000)
+```
+
+Taxonomy table with ASV sequences
+```{r}
+tax <- tax_table(ps) %>%
+    as("matrix") %>%
+    tibble::as_tibble(rownames = "SV")
+sequences <- refseq(ps) %>%
+    as("character") %>%
+    enframe("SV", "Sequence")
+tax <- left_join(tax, sequences, by = "SV")
+tax
+```
+
+# Taxonomy assignment statistics
+
+What fraction of reads were assigned at each rank?
+```{r}
+# pstb <- speedyseq::psmelt(ps) %>%
+pstb <- psmelt(ps) %>%
+    as_tibble %>%
+    rename(SV = OTU)
+tbl <- pstb %>%
+    gather("Rank", "Name", rank_names(ps)) %>%
+    group_by(Rank) %>%
+    summarize(
+        Reads_classified = sum(Abundance * !is.na(Name)),
+        Reads_total = sum(Abundance)
+    ) %>%
+    mutate(Frac_classified = Reads_classified / Reads_total) %>%
+    # Sort the table by ranks
+    mutate(Rank = factor(Rank, rank_names(ps))) %>%
+    arrange(Rank)
+tbl
+# # A tibble: 7 x 4
+#   Rank    Reads_classified Reads_total Frac_classified
+#   <fct>              <int>       <int>           <dbl>
+# 1 Kingdom          4658443     4658471           1.000
+# 2 Phylum           4653906     4658471           0.999
+# 3 Class            4651191     4658471           0.998
+# 4 Order            4635604     4658471           0.995
+# 5 Family           4531810     4658471           0.973
+# 6 Genus            3863364     4658471           0.829
+# 7 Species          1493294     4658471           0.321
+```
+
+```{r}
+```
+
+
+# Clostridioides in the samples
+
+What Clostridioides were found?
+```{r}
+tax %>%
+    filter(Genus == "Clostridioides") %>%
+    select(SV, Genus:Species)
+```
+
+Three SVs were identifid as C diff becuase they were exact matches to 16s
+sequences in the Silva species database, but the other wasn't. 
+We can try BLASTing it's sequence,
+```{r}
+refseq(ps)$SV843 %>% as("character")
+# [1] "TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTTCAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGTAAGACTTGAGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGGAACACCAGTTGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACAGG"
+# Use in Blastn against 16S db
+```
+The top hits are
+```
+￼Select seq NR_113132.1	Peptoclostridium difficile strain JCM 1296 16S ribosomal RNA gene, partial sequence	455	455	100%	6e-128	99%	NR_113132.1
+￼Select seq NR_112172.1	Peptoclostridium difficile strain ATCC 9689 16S ribosomal RNA gene, partial sequence	455	455	100%	6e-128	99%	NR_112172.1
+```
+The closest hit is to C diff strains, but there is a 2 bp mismatch from these
+C diff strains, so we can't say that SV843 is C diff. Rather, it seems to be a
+from an uncharacterized sister species.
+
+
+Compare Clostridioides SVs to CD lab test. First, get a dataframe for plotting,
+```{r}
+tb <- pstb %>% 
+    filter(Genus == "Clostridioides") %>%
+    filter(Abundance > 0)
+tb <- tb %>%
+    rename(Count = Abundance) %>%
+    mutate(Proportion = Count / Sample_sum)
+```
+
+```{r}
+ggplot(tb, aes(Host_species, Count, color = SV)) +
+    geom_quasirandom() +
+    scale_y_log10() +
+    facet_wrap(~CD)
+ggsave(file.path(here::here(), "figures", "C.diffPrevalenceASV.pdf"))
+# For Proportions, use  
+# ggplot(tb, aes(Host_species, Proportion, color = SV)) +
+```
+
+The picture looks very similar if we plot Proportion instead of read count.
+This plot suggests that SV843 may not get detected on the CD assay and is
+further evidence that we should not think of it as C diff, but as a different
+Clostridioides species.  This plot also suggests that analyses of CD should
+consider treating the Negative samples with detectable C diff ASVs as Positive.
+
+We can see that SV82 is the dominant SV in Canine and Equine samples. The other
+two Cdiff SVs only appear in Equine. It turns out we only find them in samples
+that also have SV82:
+```{r}
+tbl <- tb %>%
+    filter(Host_species == "Equine", Count > 0) %>%
+    select(CD, Breed, Sample, SV, Ribotype) %>%
+    arrange(Breed, Sample)
+tbl %>% knitr::kable()
+# 
+# 
+# |CD       |Breed          |Sample     |SV     |Ribotype |
+# |:--------|:--------------|:----------|:------|:--------|
+# |Negative |Arabian        |CS105-EQ29 |SV82   |Negative |
+
+# |Positive |Donkey         |CS139-EQ42 |SV82   |F078-126 |
+# |Positive |Donkey         |CS139-EQ42 |SV1962 |F078-126 |
+# |Positive |Donkey         |CS139-EQ42 |SV2073 |F078-126 |
+
+# |Positive |Donkey         |CS97-EQ27  |SV82   |F010     |
+# |Positive |Hanoverian     |CS104-EQ28 |SV82   |Negative |
+# |Negative |Paint Horse    |CS23-EQ5   |SV82   |Negative |
+# |Negative |Quarter Horse  |CS115-EQ31 |SV82   |Negative |
+
+# |Negative |Quarter Horse  |CS128-EQ34 |SV82   |Negative |
+# |Negative |Quarter Horse  |CS128-EQ34 |SV2073 |Negative |
+# |Negative |Quarter Horse  |CS128-EQ34 |SV1962 |Negative |
+
+# |Negative |Welsh Pony/Cob |CS39-EQ8   |SV82   |Negative |
+# |Negative |West Phalian   |CS57-EQ13  |SV82   |Negative |
+```
+
+So every sample with Cdiff has SV82, and two Equine samples also have the other
+two SVs. These two samples suggest co-existance of multiple Cdiff strains,
+which would be missed by the Ribotype assay.
+
+We can also compare SVs to ribotype. This code will make a table of all the
+different SV + Ribotype combinations
+```{r}
+tb %>%
+    filter(CD == "Positive", Count > 0) %>%
+    select(SV, Ribotype) %>%
+    distinct %>%
+    print(n=Inf)
+```
+
+The case where the same ribotype matches several SVs is because of the Equine
+samples that have all three SVs.
+
+
+What fraction of CD-positive (lab assay) samples have Cdiff reads? We can
+already see this in the figure above, so probably don't need to show in lab
+meeting, but it's nice to have the numbers.
+```{r}
+tbl <- pstb %>%
+    filter(Genus == "Clostridioides", Species == "difficile") %>%
+    group_by(Host_species, CD, Sample) %>%
+    summarize(Present = sum(Abundance) > 0) %>%
+    summarize(n = n(), Num_present = sum(Present), Frac_present = mean(Present))
+tbl
+# # A tibble: 9 x 5
+# # Groups:   Host_species [?]
+#   Host_species CD           n Num_present Frac_present
+#   <chr>        <chr>    <int>       <int>        <dbl>
+# 1 Alpaca       Negative     1           0       0     
+# 2 Avian        Negative     1           0       0     
+# 3 Canine       Negative    73           2       0.0274
+# 4 Canine       Positive    31          19       0.613 
+# 5 Equine       Negative    62           6       0.0968
+# 6 Equine       Positive     7           3       0.429 
+# 7 Feline       Negative    14           1       0.0714
+# 8 Feline       Positive     1           0       0     
+# 9 Ovine        Negative     5           0       0     
+```
+
+# Alpha diversity
+
+```{r}
+psf <- ps %>%
+    tax_glom("Family")
+```
+
+The diversity function in the `vegan` package can be used to calculate Shannon,
+Simpson, and Inverse Simpson indices, and is already installed with phyloseq.
+
+I will make a dataframe with the sample data and with Inverse Simpson
+diversity at the SV and Family levels.
+
+```{r}
+invsimp.family <- vegan::diversity(otu_table(psf), index = "invsimpson",
+    MARGIN = 1 + taxa_are_rows(psf))
+invsimp.sv <- vegan::diversity(otu_table(ps), index = "invsimpson",
+    MARGIN = 1 + taxa_are_rows(psf))
+# Check the output
+head(invsimp.family)
+head(invsimp.sv)
+# In the same order as the phyloseq samples
+all(names(invsimp.family) == sample_names(ps))
+
+# add to the sample data
+sam <- sample_data(ps) 
+sam$InvSimp.Family <- invsimp.family
+sam$InvSimp.SV <- invsimp.sv
+sample_data(ps) <- sam
+head(sam)
+```
+
+```{r}
+colors.host_species = c(Canine = "#000000", Equine = "#489BE5", Feline = "#F53112", Ovine = "#AE43A7")
+shape.cd <- c(Positive = 19, Negative = 2)
+```
+
+Different host animals:
+```{r}
+tb <- sam %>%
+    as_tibble(rownames = "Sample") %>%
+    filter(Host_species %in% c("Canine", "Feline", "Equine", "Ovine")) %>%
+    mutate(Host_species = fct_reorder(Host_species, InvSimp.SV)) %>%
+    rename(ASV = InvSimp.SV, Family = InvSimp.Family) %>%
+    gather("Rank", "Diversity", ASV, Family)
+ggplot(tb, aes(Host_species, Diversity, color = Host_species, shape = CD)) +
+    geom_quasirandom() +
+    facet_wrap(~Rank, scales = "free") +
+    scale_color_manual(values = colors.host_species) +
+    scale_shape_manual(values = shape.cd) +
+    labs(x = "Host species", y = "Diversity (Inverse Simpson)")
+ggsave(file.path(here::here(), "figures", "InvSimp_Allhost_ASVFamily.pdf"))
+```
+
+
+```{r}
+tb
+```
+
+Let's test diversity vs. Ab, using ASV-level diversity
+```{r}
+tb0 <- tb %>%
+    filter(Host_species == "Canine", Rank == "ASV", !is.na(Ab))
+res <- t.test(Diversity ~ Ab, data = tb0)
+ggplot(tb0, aes(Ab, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Antibiotics,", "p =", signif(res$p.value, 2)))
+ggsave(file.path(here::here(), "figures", "InvSimp_Canine_ASV_Ab.pdf"))
+```
+
+There is a weak effect (slightly lower in Ab-Yes dogs).
+
+Do the same for Family level:
+```{r}
+tb0 <- tb %>%
+    filter(Host_species == "Canine", Rank == "Family", !is.na(Ab))
+res <- t.test(Diversity ~ Ab, data = tb0)
+ggplot(tb0, aes(Ab, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Antibiotics,", "p =", signif(res$p.value, 2)))
+```
+
+ASV-lvl Diversity vs CD
+```{r}
+tb0 <- tb %>%
+    filter(Host_species == "Canine", Rank == "ASV", !is.na(CD))
+res <- t.test(Diversity ~ CD, data = tb0)
+ggplot(tb0, aes(CD, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ CD,", "p =", signif(res$p.value, 2)))
+ggsave(file.path(here::here(), "figures", "InvSimp_Canine_ASV_CD.pdf"))
+```
+
+There appears to be no effect of CD on diversity in dogs. 
+
+
+ASV-lvl Diversity vs GI
+```{r}
+tb0 <- tb %>%
+    filter(Host_species == "Canine", Rank == "ASV", !is.na(GI))
+res <- t.test(Diversity ~ GI, data = tb0)
+ggplot(tb0, aes(GI, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ GI,", "p =", signif(res$p.value, 2)))
+ggsave(file.path(here::here(), "figures", "InvSimp_Canine_ASV_GI.pdf"))
+```
+
+
+In contrast, we can see that there is a significant difference between dogs and
+horses, and much higher diversity in horses
+```{r}
+tb0 <- tb %>%
+    filter(Host_species %in% c("Canine", "Equine"), Rank == "ASV")
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+```
+
+```{r}
+tb0 <- tb %>%
+filter(Host_species %in% c("Canine", "Feline"), Rank == "ASV") 
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+```
+
+
+```{r}
+tb0 <- tb %>%
+filter(Host_species %in% c("Canine", "Ovine"), Rank == "ASV") 
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+```
+
+```{r}
+tb0 <- tb %>%
+filter(Host_species %in% c("Feline", "Equine"), Rank == "ASV") 
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+```
+
+```{r}
+tb0 <- tb %>%
+filter(Host_species %in% c("Feline", "Ovine"), Rank == "ASV") 
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+```
+
+```{r}
+tb0 <- tb %>%
+filter(Host_species %in% c("Equine", "Ovine"), Rank == "ASV") 
+res <- t.test(Diversity ~ Host_species, data = tb0)
+ggplot(tb0, aes(Host_species, Diversity)) +
+    geom_quasirandom() +
+    labs(title = paste("Diversity ~ Host_species,", "p =", signif(res$p.value, 2)))
+
+```
+
