@@ -1,0 +1,282 @@
+---
+title: "Stone2019"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+    highlight: tango
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggthemes)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+## Import the data from Stone et al 2019
+
+_The chunks in this section should only be evaluated once and so have `eval =
+FALSE`._
+
+Load the sample metadata + ASV table + ASV sequences for the canine samples.
+```{r, eval = FALSE}
+st <- read_csv(here("data", "stone2019-canine-asv-table.csv"),
+    skip = 1)
+sam <- readxl::read_excel(here("data", "stone2019-sample-data.xlsx"))
+asvs <- Biostrings::readDNAStringSet(
+    here("data", "stone2019-asv-sequences.fasta"))
+sam %>%
+    group_by(Cohort) %>%
+    count
+sam %>%
+    filter(str_detect(Cohort, "Canine")) %>%
+    count
+```
+Build a phyloseq object (it will contain just the canine samples).
+```{r, eval = FALSE}
+mat <- st %>%
+    select(-1) %>%
+    as("matrix")
+rownames(mat) <- st %>% select(1) %>% deframe
+samdf <- sam %>%
+    select(-1) %>%
+    as.data.frame
+rownames(samdf) <- sam %>% select(1) %>% deframe
+OTU <- otu_table(mat, taxa_are_rows = TRUE)
+SAM <- sample_data(samdf)
+ps.stone <- phyloseq(OTU, SAM, asvs)
+ntaxa(ps.stone) == nrow(st) # All the taxa were successfully matched in OTU and asvs
+nsamples(ps.stone) # All the canine samples were successfully imported
+```
+Everything looks good! Let's add the read depth to the sample data, and save
+the phyloseq object, with only the ASVs that appear in the canine samples.
+```{r, eval = FALSE}
+sample_data(ps.stone)$Sample_sum = sample_sums(ps.stone)
+saveRDS(ps.stone, here("results", "stone2019-ps.Rds"))
+```
+Note, only taxa that appear in at least one canine sample are included,
+```{r, eval = FALSE}
+taxa_sums(ps.stone) %>% min
+```
+
+## Compare ASVs in Stone2019 to our C. hiranonis ASVs
+
+```{r}
+ps <- readRDS(here("results", "ps.Rds"))
+ps.stone <- readRDS(here("results", "stone2019-ps.Rds"))
+hiranonis_seqs <- ps %>% 
+    subset_taxa(str_detect(NCBI_species, "hiranonis")) %>%
+    refseq
+```
+Inspect the ASV sequence lengths in each dataset,
+```{r}
+refseq(ps) %>% as.character %>% nchar %>% table
+refseq(ps.stone) %>% as.character %>% nchar %>% table
+```
+The sequences of Stone2019 are shorter than ours, likely due to additional
+trimming of the ends of the amplicon sequences. So we will look for ASVs in
+their dataset that exactly match ASV4 and ASV62 in the overlapping region of
+~233bp. 
+```{r}
+asv4.stone <- Biostrings::whichPDict(refseq(ps.stone), hiranonis_seqs[["ASV4"]])
+asv4.stone 
+asv62.stone <- Biostrings::whichPDict(refseq(ps.stone), hiranonis_seqs[["ASV62"]])
+asv62.stone 
+```
+Note how similar the indices are of the ASVs in both datasets. This is likely
+a consequence of DADA2 ordering the ASVs by their abundance.
+
+Are there any other ASVs close to ASV4 in their data?
+```{r}
+Biostrings::whichPDict(refseq(ps.stone), hiranonis_seqs[["ASV4"]], 
+    max.mismatch = 5, with.indels = TRUE)
+```
+No, just these two.
+
+Let's name them so we can easily compare with our data.
+```{r}
+taxa_names(ps.stone)[asv4.stone] <- "ASV4"
+taxa_names(ps.stone)[asv62.stone] <- "ASV62"
+```
+
+Does ASV62 always co-occur with ASV4?
+```{r}
+st <- otu_table(ps.stone) %>% 
+    t %>%
+    prune_taxa(c("ASV4", "ASV62"), .) %>%
+    as_tibble(tidy = FALSE)
+head(st)
+```
+```{r}
+st %>%
+    mutate_at(vars(ASV4, ASV62), ~ . > 0) %>%
+    group_by(ASV4, ASV62) %>%
+    count
+st %>% 
+    filter(ASV4 > 0) %>%
+    ggplot(aes(ASV62 / ASV4)) +
+    geom_dotplot(stackgroups = TRUE, binpositions = "all", binwidth = 0.015) +
+    scale_y_continuous(breaks = c()) +
+    labs(y = "Count", title = "Ratio of ASV62 to ASV4 reads")
+```
+
+Just as in our data, ASV62 always occurs with and in a lower abundance than
+ASV4.
+
+## C. difficile ASVs
+
+Let's also check for the C. difficile ASV82
+```{r}
+asv82.stone <- Biostrings::whichPDict(refseq(ps.stone), refseq(ps)[["ASV82"]])
+asv82.stone 
+Biostrings::whichPDict(refseq(ps.stone), refseq(ps)[["ASV82"]],
+    max.mismatch = 3, with.indels = TRUE) # No other C.diff ASVs
+taxa_names(ps.stone)[asv82.stone] <- "ASV82"
+# record the number of Cdiff reads
+sample_data(ps.stone)$CD_reads <- prune_taxa("ASV82", otu_table(ps.stone)) %>%
+    sample_sums
+```
+
+## Compare CD and CH detection by community 16S to other assays
+
+Setup - create dataframes with the needed fields
+```{r tb}
+tb <- ps %>%
+    subset_samples(Host_species == "Canine") %>%
+    prune_taxa(c("ASV4", "ASV62"), .) %>%
+    as_tibble(tax = FALSE) %>%
+    spread(Taxon, Abundance) %>%
+    mutate_if(~all(is.logical(.)), as.integer) %>%
+    mutate(
+        CD = CD_either,
+        CH = factor((ASV4 > 0) + (ASV62 > 0))
+    )
+tb.stone <- ps.stone %>%
+    prune_taxa(c("ASV4", "ASV62"), .) %>%
+    as_tibble(tax = FALSE) %>%
+    spread(Taxon, Abundance) %>%
+    mutate_if(~all(is.logical(.)), as.integer) %>%
+    mutate(
+        CD_lab = C.difficile_Positive == "+",
+        CD = CD_lab | (CD_reads > 0),
+        CH = factor((ASV4 > 0) + (ASV62 > 0))
+    )
+```
+
+### C. hiranonis
+
+```{r}
+tb.stone %>%
+    transmute(
+        CH_targeted = C..hiranonis_Detected == "+",
+        CH_community = CH != 0, 
+        ) %>%
+    table %>%
+    addmargins
+```
+There is very close agreement from ASV read counts and detection by targeted
+sequencing.
+
+### C. difficile
+
+```{r}
+tb.stone %>%
+    transmute(
+        CD_lab = C.difficile_Positive == "+",
+        CD_reads = CD_reads > 0, 
+        ) %>%
+    table %>%
+    addmargins
+```
+Community sequencing seems to be doing worse in detecting CD in the Stone
+dataset than what we observed, and does not detect any additional cases.
+
+## Compare the effects of the two C. hiranonis strains on CD between datasets
+
+```{r}
+library(brms)
+library(tidybayes)
+```
+
+Counts in our data:
+```{r}
+tb %>%
+    select(CH, CD) %>%
+    table %>%
+    addmargins
+```
+Counts in Stone2019 data:
+```{r}
+tb.stone %>%
+    select(CH, CD) %>%
+    table %>%
+    addmargins
+```
+
+Next, we estimate coefficients of CH1 and CH2 by Bayesian logistic regression.
+```{r, dependson = "tb"}
+set.seed(42)
+base_prior <- c(
+    prior(student_t(7, 0, 1.53), class = Intercept),
+    prior(student_t(7, 0, 1.77), class = b)
+)
+b1 <- brm(data = tb, family = bernoulli, CD ~ CH, 
+    prior = base_prior)
+b1
+b1.stone <- brm(data = tb.stone, family = bernoulli, CD ~ CH, 
+    prior = base_prior)
+b1.stone
+```
+
+```{r}
+lvls <- paste0("b_", c("Intercept", "CH1", "CH2"))
+labeller <- function(lvl) {
+    lvl %>% 
+        str_replace("b_", "") %>% 
+        str_replace("_", " ")
+}
+list(b1, b1.stone) %>%
+    set_names(c("Our data", "Stone2019 data")) %>%
+    map_dfr(gather_draws, `b_.+`, regex = TRUE, .id = "dataset") %>%
+    ggplot(aes(y = factor(.variable, rev(lvls)), x = .value)) +
+    geom_vline(xintercept = 0, color = "grey") +
+    stat_intervalh(.width = c(.50, .80, .95, .99)) +
+    scale_x_continuous(limits = c(-7, 3), oob = scales::squish) +
+    scale_y_discrete(labels = labeller) +
+    scale_color_brewer() +
+    labs(y = "Variable", x = "Value of coefficient",
+        color = "Credible\ninterval") +
+    guides(colour = guide_legend(reverse = TRUE)) +
+    theme_minimal() + 
+    facet_wrap(~dataset) +
+    theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.spacing.x = unit(10, "mm"))
+ggsave(here("figures", "logreg-cd-stone2019.pdf"), 
+    width = 6, height = 2.5, units = "in")
+```
+
+The effect of CH1 are comparable in the two studies; but Stone2019 do not find
+the strong negative effect of CH2 that we observe; they also find a higher
+prevalance of CD in samples without C. hiranonis.
