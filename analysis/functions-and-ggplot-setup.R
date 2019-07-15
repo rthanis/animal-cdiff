@@ -102,3 +102,14 @@ colors.age_group <- c(
 shape.cd <- c(Positive = 19, Negative = 2)
 
 italicize <- function (x) bquote(italic(.(x)))
+
+# Other functions ------------------------------------------------------------
+
+#' Compute the centered log-ratio transform of x
+#' 
+#' @param x Vector of abundances.
+#' @param base Base for logarithm
+#'
+clr <- function(x, base = exp(1), na.rm = FALSE) {
+    log(x, base = base) - mean(log(x, base = base), na.rm = na.rm)
+}

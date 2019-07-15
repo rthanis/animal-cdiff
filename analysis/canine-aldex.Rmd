@@ -1,0 +1,372 @@
+---
+title: "Compositional PCA and differential-abundance analysis"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+# Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggthemes)
+library(factoextra)
+library(cowplot)
+library(ALDEx2)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+Set different ggplot theme for this file,
+```{r}
+theme_set(theme_minimal() + theme(panel.grid = element_blank()))
+color.axis <- "darkgrey"
+```
+
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds"))
+# Make variable CD to be our indicator of Cdiff presence for this analysis
+sample_data(ps)$CD <- sample_data(ps)$CD_either
+# Shorten the sample names
+sample_names(ps) <- sample_names(ps) %>%
+    str_match("(.+)_") %>% 
+    .[,2]
+sam <- sample_data(ps) %>% as_tibble
+tax <- tax_table(ps) %>% as_tibble
+```
+
+Restrict our analysis to canine samples that appear in at least 5 samples and
+at least 100 reads.
+```{r}
+filt_fun <- function (x, min_reads = 100, min_samples = 5) {
+    (sum(x) > min_reads) & (sum(x > 0) > min_samples)
+}
+ps.canine <- subset_samples(ps, Host_species == "Canine") %>%
+    filter_taxa(filt_fun, prune = TRUE)
+```
+
+# CD associations in canines
+
+## Presence/absence testing
+
+Viewing the CLR abundances of the top hits (see below) suggests that the top
+associations detected by ALDEx2 are driven mainly by differential prevalence
+(presence/absence), rather than a consistent log-fold change in abundance
+(which is what ALDEx2 and most other differential abundance methods are
+designed to measure). We can test for differential prevalence directly with a
+Fisher's Exact Test, which we'll compare to the ALDEx2 associations below.
+```{r}
+# Data frame with the prevalence of each taxon (ASV) in CD+ and CD- samples
+pa <- ps.canine %>% as_tibble %>%
+    group_by(Taxon, CD) %>% 
+    summarize( 
+        Absent = sum(Abundance == 0), 
+        Present = sum(Abundance > 0),
+        Prevalence = mean(Abundance > 0)
+    ) %>%
+    ungroup
+# For each ASV, Fisher's exact test of association with CD
+pa0 <- pa %>%
+    select(-Prevalence) %>%
+    group_by(Taxon) %>%
+    nest %>%
+    mutate(test = map(data, ~fisher.test(.[,2:3]))) %>%
+    unnest(map(test, broom::tidy)) %>%
+    select(-data, -test)
+# Top 10 positive and negative associations
+pa0 %>%
+    group_by(estimate > 1) %>%
+    top_n(10, -p.value) %>%
+    arrange(estimate < 1, p.value) %>%
+    select(-method,-alternative) %>%
+    knitr::kable()
+```
+
+## Aldex
+
+```{r x.canine}
+set.seed(20190314)
+x <- aldex.clr(otu_table(ps.canine) %>% t, 
+    sample_data(ps.canine)$CD,
+    mc.samples = 128, denom = "all", useMC = TRUE)
+x.tt <- aldex.ttest(x, paired.test = FALSE) %>%
+    as_tibble(rownames = "Taxon")
+x.effect <- aldex.effect(x, useMC = TRUE) %>%
+    as_tibble(rownames = "Taxon")
+x.all <- left_join(x.tt, x.effect, by = "Taxon")
+remove(x.tt, x.effect)
+# denom <- getDenom(x) %>%
+#     getFeatures(x)[.] %>%
+#     names
+```
+
+Aldex "MW" plot
+```{r, dependson = "x.canine", fig.width = 8}
+cutoff = 0.1
+aldex.plot(x.all, type = "MW", test = "wilcox", cutoff = cutoff)
+```
+
+Examine the top positive and negative associations
+```{r, dependson = "x.canine.pd"}
+top_hits <- x.all %>%
+    left_join(tax, by = "Taxon") %>%
+    group_by(sign(effect)) %>%
+    top_n(15, abs(effect)) %>%
+    ungroup %>%
+    left_join(tax) %>%
+    select(Taxon, effect, starts_with("w"), Phylum, Genus) %>%
+    arrange(-sign(effect), -abs(effect))
+top_hits %>%
+    knitr::kable(digits = 3)
+```
+
+Compare the ALDEx2 associations with differential prevalence for the top ALDEx2
+hits,
+```{r}
+top_hits %>%
+    left_join(pa0 %>% select(Taxon, estimate, p.value), by = "Taxon") %>%
+    select(-Phylum) %>%
+    knitr::kable(digits = 3)
+```
+The top differentially abundant taxa according to ALDEx2 mainly have p-valuse <
+0.05 by the Fisher test, and in the expected direction. This observation is
+consistent with the idea that ALDEx2 is mainly picking up presence/absence
+patterns, which we explore visually below.
+
+```{r x.canine.pd, dependson = "x.canine"}
+# Pick the top 4 positive and negative associations, plus ASV62
+taxa <- x.all %>%
+    group_by(sign(effect)) %>%
+    top_n(4, abs(effect)) %>%
+    arrange(-sign(effect), -abs(effect)) %>%
+    .$Taxon %>%
+    c("ASV62")
+clr.post <- getMonteCarloInstances(x) %>%
+    map(t) %>%
+    map_dfr(~as_tibble(.) %>% mutate(idx = row_number()), .id = "Sample") %>%
+    select(Sample, idx, taxa) %>%
+    gather("Taxon", "CLR", taxa) %>%
+    left_join(sam, by = "Sample") %>%
+    left_join(tax, by = "Taxon")
+clr.post <- clr.post %>%
+    mutate(Taxon = factor(Taxon, taxa))
+clr.means <- clr.post %>%
+    group_by_at(vars(-idx, -CLR)) %>%
+    summarize(CLR = mean(CLR)) %>%
+    ungroup
+```
+
+Labels for the top taxa by genus and species; use the NCBI organism for C.
+hiranonis; and only use the first identified species for Silva species id in
+cases where there are multiple matches.
+```{r}
+taxlabs <- tax %>%
+    filter(Taxon %in% taxa) %>%
+    mutate(
+        Species = str_extract(Species, "[^/]+"), # Grab just the first species
+        Label = case_when(
+            !is.na(NCBI_species) ~ NCBI_species,
+            TRUE ~ paste(Genus, Species)
+        )
+    ) %>%
+    mutate(Taxon = factor(Taxon, taxa),
+        Label = paste(Taxon, Label, sep = "\n"),
+        # Put Genus + species on different lines
+        Label = str_replace(Label, " ", "\n"),
+        ) %>%
+    select(Taxon, Label) %>%
+    deframe
+taxlabs
+```
+
+In figure legend, can note that hiranonis is classified as Peptoclostridium
+(genus) and that ASV112 matches three Sutterella species
+(massiliensis/stercoricanis/wadsworthensis).
+
+```{r, dependson = "x.canine.pd", fig.width = 8, fig.asp = 4/4}
+pa1 <- pa %>%
+    filter(Taxon %in% taxa) %>%
+    mutate(Prevalence = round(Prevalence, 2), Taxon = factor(Taxon, taxa))
+p.violin <- clr.post %>%
+    filter(idx <= 32) %>%
+    ggplot(aes(CD, CLR, color = CD)) +
+    # geom_hline(yintercept = 0.4, color = color.axis) +
+    # geom_violin(draw_quantiles = c(0.5), bw = 0.5) +
+    geom_violin(bw = 0.5) +
+    geom_quasirandom(data = clr.means, size = 0.8) +
+    scale_y_continuous(limits = c(-6, 17), breaks = c(-5, 0, 5, 10),
+        oob = scales::squish) +
+    facet_grid(Taxon ~ ., labeller = labeller(Taxon = taxlabs)) +
+    coord_flip() +
+    geom_text(data = pa1, aes(label = Prevalence), y = 16.7) +
+    theme(
+        # panel.grid.major.y = element_line(color = color.axis),
+        legend.position = "top",
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        strip.text.y = element_text(angle = 0),
+        panel.spacing = unit(1, "lines")
+        ) +
+    labs(y = "CLR relative abundance")
+p.violin
+```
+
+It is difficult to tell which points correspond to samples in which the taxon
+has a read count of 0, since the mean CLR value for a taxon with a read count
+of 0 depends on the read depth and sample composition. Let's see what the
+largest CLR value is for such a taxon.
+```{r}
+tb <- clr.means %>% 
+    select(Sample, Taxon, CD, CLR) %>%
+    left_join(otu_table(ps.canine) %>% as_tibble(tidy = TRUE), 
+        by = c("Sample", "Taxon"))
+tb %>%
+    filter(Abundance == 0) %>%
+    arrange(-CLR)
+```
+In one case, the mean CLR is positive (0.276), but in the rest of the cases it
+is negative.
+
+```{r, fig.width = 8}
+tb %>%
+    filter(Abundance <= 10) %>%
+    ggplot(aes(CD, CLR, color = Abundance > 0)) +
+    facet_grid(Taxon ~ .) +
+    geom_hline(yintercept = 0) +
+    geom_hline(yintercept = 0.3) +
+    geom_quasirandom() +
+    coord_flip() 
+```
+
+
+# PCA
+
+Weighted pca to give even weight to CD+/- groups
+
+note, weighted pca looks almost identical to the unweighted pca, though the
+taxa (loadings?) are somewhat larger
+
+```{r pca.canine, dependson = "x.canine"}
+# Weight by 1 / # of samples in group
+ws <- sample_data(ps.canine) %>%
+    as_tibble %>%
+    group_by(CD) %>%
+    mutate(Weight = 1 / n()) %>%
+    ungroup %>%
+    select(Sample, Weight) %>%
+    deframe
+# Weighted pca
+pcx.ws <- otu_table(ps.canine) %>%
+    transform_sample_counts(function (x) clr(x + 0.5)) %>%
+    ade4::dudi.pca(row.w = ws, center = TRUE, scale = FALSE, scannf = FALSE,
+    nf = 5)
+# Unweighted PCA
+pcx <- otu_table(ps.canine) %>%
+    transform_sample_counts(function (x) clr(x + 0.5)) %>%
+    ade4::dudi.pca(center = TRUE, scale = FALSE, scannf = FALSE,
+    nf = 5)
+# Percent variance explained
+perc_var <- pcx$eig %>% 
+    {. / sum(.)} %>%
+    head(n=5) %>%
+    round(., 2) %>%
+    {paste0("[", 100 * . , "%]")}
+perc_var
+# Samples plot
+pctb.sam <- fviz_pca_ind(pcx) %>%
+    .$data %>% 
+    as_tibble() %>%
+    rename(Sample = name, PC1 = x, PC2 = y) %>%
+    left_join(sam, by = "Sample")
+p1 <- pctb.sam %>%
+    ggplot(aes(PC1, PC2, color = CD)) +
+    geom_hline(yintercept = 0, color = color.axis) +
+    geom_vline(xintercept = 0, color = color.axis) +
+    geom_point() +
+    theme(legend.position = "bottom") +
+    scale_x_continuous(limits = range(pctb.sam$PC1)) +
+    scale_y_continuous(limits = range(pctb.sam$PC2)) +
+    labs(title = "PCA ordination: Samples", 
+        x = paste("PC1", perc_var[1]), y = paste("PC2", perc_var[2]))
+# Taxa plot
+pctb.taxa <- fviz_pca_var(pcx) %>%
+    .$data %>% 
+    as_tibble() %>%
+    rename(Taxon = name, PC1 = x, PC2 = y) %>%
+    left_join(tax, by = "Taxon") %>%
+    left_join(x.all, by = "Taxon")
+p2 <- pctb.taxa %>%
+    filter(Taxon %in% top_hits$Taxon) %>%
+    ggplot(aes(PC1, PC2, label = Taxon, color = as.factor(sign(effect)))) +
+    geom_hline(yintercept = 0, color = color.axis) +
+    geom_vline(xintercept = 0, color = color.axis) +
+    geom_point(aes(size = abs(effect))) +
+    ggrepel::geom_text_repel(data = pctb.taxa %>% filter(Taxon %in% taxa)) +
+    theme(legend.position = "bottom") +
+    scale_x_continuous(limits = range(pctb.sam$PC1)/6) +
+    scale_y_continuous(limits = range(pctb.sam$PC2)/6) +
+    scale_size(breaks = c(0.3, 0.6, 0.9)) +
+    guides(color = guide_legend(override.aes = list(label = ""))) +
+    labs(title = "PCA ordination: ASVs (6X zoom)", color = "sign(effect)",
+        x = paste("PC1", perc_var[1]), y = paste("PC2", perc_var[2]))
+# pctb.taxa %>% filter(wi.ep < 0.05) %>% .$effect %>% abs %>% range
+```
+
+```{r, dependson = "pca.canine", fig.width = 10, fig.asp = 1/2}
+cowplot::plot_grid(
+    p1,
+    p2,
+    align = "h"
+)
+```
+
+### Possible main text figure
+
+```{r, fig.width = 9, fig.asp = 0.8}
+pl <- plot_grid(
+    p1 + theme(legend.position = "bottom") +
+        labs(color = "C. difficile presence"),
+    p2 + theme(legend.position = "bottom") + 
+        guides(color = FALSE, size = guide_legend()),
+    align = "v", ncol = 1,
+    labels = c("A", "B")
+)
+# plot_grid(pl, p.violin, axis = "tb", align = "h")
+p <- plot_grid(pl, NULL, 
+    p.violin + 
+        theme(legend.position = "bottom") + 
+        guides(color = guide_legend(override.aes = list(label = ""))) +
+        labs(title = "       Top differentially-abundant ASVs", 
+            x = "Relative abundance (CLR)",
+            color = "C. difficile presence"),
+    nrow = 1, rel_widths = c(1, 0.0, 1), 
+    labels = c("", "", "C"), label_x = -0.00
+    )
+    # draw_text("Prevalence", x = 0.895, y = 0.98, hjust = 1, vjust = 1, 
+    #     size = 12)
+ggdraw(p) + 
+    draw_text("Prevalence", x = 0.893, y = 0.072, hjust = 1, vjust = 0,
+    size = 11)
+ggsave(here("figures", "community-cd-association.pdf"), 
+    width = 7, height = 5.5, units = "in", scale = 5/3,
+    useDingbats = FALSE)
+```
