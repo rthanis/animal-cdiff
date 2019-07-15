@@ -1,0 +1,314 @@
+---
+title: "Alpha and beta diversity across animal host species"
+author: "Rajani and Mike"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    # cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(speedyseq) # Use speedyseq for faster tax_glom()'s.
+# library(phyloseq) # Can use phyloseq if speedyseq not installed
+library(tidyverse)
+library(here)
+library(ggbeeswarm)
+library(ggthemes)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+Load the microbiome profiles, excluding the single Alpaca and Avian sample.
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds")) %>%
+    subset_samples(Host_species %in% c("Canine", "Feline", "Equine", 
+            "Ovine")) %>% 
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+ps
+```
+We consider a sample as CD positive if CD was detected either the lab assay or
+in the microbiome sequencing profiles.
+```{r}
+sample_data(ps)$CD <- sample_data(ps)$CD_either
+sam <- sample_data(ps) %>% as_tibble
+glimpse(sam)
+```
+
+Our question is primarily whether CD presence affects the _rest_ of the
+microbiome, so we might want to prune the Cdiff reads before doing our alpha
+and beta divsity analysis. This pruning will likely make very little difference
+to the results, because Cdiff tends to be low a very low percentage of the
+community:
+```{r, fig.width = 4}
+sam %>%
+    filter(CD_reads > 0) %>%
+    mutate(Proportion_CD = CD_reads / Sample_sum) %>%
+    {summary(.$Proportion_CD)}
+sam %>%
+    filter(CD_reads > 0) %>%
+    ggplot(aes(CD_reads / Sample_sum)) +
+    geom_histogram() +
+    scale_x_log10() +
+    labs(x = "Proportion C. difficile")
+```
+
+and the alpha and beta diversity measures we use are not sensitive to a
+low-proportion taxa. However, to confirm that our results are not substantially
+affected by CD abundance in the profiles, we will run our analyses both ways.
+```{r}
+cdiff_asvs <- tax_table(ps) %>% as_tibble %>%
+    filter(Genus == "Clostridioides", Species == "difficile") %>%
+    .$Taxon
+(cdiff_asvs %in% taxa_names(ps)) %>% set_names(cdiff_asvs)
+# Uncomment to remove C. difficile ASVs from the community profiles
+# ntaxa(ps)
+# ps <- prune_taxa(setdiff(taxa_names(ps), cdiff_asvs), ps)
+# ntaxa(ps)
+# (cdiff_asvs %in% taxa_names(ps)) %>% set_names(cdiff_asvs)
+```
+
+Convert profiles to proportions, and get versions aggregated to the genus and
+family ranks
+```{r}
+ps <- ps %>%
+    transform_sample_counts(function (x) x / sum(x))
+# Note, ASVs without the relevant taxonomic assignment will be discarded
+psf <- ps %>%
+    tax_glom("Family") %>%
+    transform_sample_counts(function (x) x / sum(x))
+psg <- ps %>%
+    tax_glom("Genus") %>%
+    transform_sample_counts(function (x) x / sum(x))
+```
+
+## Alpha and beta diversity across hosts
+
+### Alpha diversity
+
+We use the `diversity()` function in the `vegan` package to calculate the
+Inverse Simpson diversity index at the ASV, Genus, and Family level and add
+these to `sample_data(ps)`.
+```{r}
+invsimp.family <- vegan::diversity(otu_table(psf), index = "invsimpson",
+    MARGIN = 1)
+invsimp.genus <- vegan::diversity(otu_table(psg), index = "invsimpson",
+    MARGIN = 1)
+invsimp.asv <- vegan::diversity(otu_table(ps), index = "invsimpson",
+    MARGIN = 1)
+# Check the output
+head(invsimp.family)
+head(invsimp.genus)
+head(invsimp.asv)
+# In the same order as the phyloseq samples
+all(names(invsimp.family) == sample_names(ps))
+all(names(invsimp.genus) == sample_names(ps))
+# Add to the sample data in `ps`
+sample_data(ps)$InvSimp.Family <- invsimp.family
+sample_data(ps)$InvSimp.Genus <- invsimp.genus
+sample_data(ps)$InvSimp.ASV <- invsimp.asv
+```
+For plotting, let's get a data frame with the sample metadata and the diversity
+measures gathered into "tidy" form,
+```{r}
+div <- sample_data(ps) %>% 
+    as_tibble %>%
+    gather("Index.Rank", "Diversity", 
+        starts_with("InvSimp"), starts_with("Richness"), 
+        starts_with("Shannon")) %>%
+    separate("Index.Rank", c("Index", "Rank"), sep = "\\.") %>%
+    mutate(
+        Rank = factor(Rank, levels = c("Family", "Genus", "ASV")),
+        Index = factor(Index, levels = c("InvSimp", "Shannon", "Richness"))
+        )
+div %>%
+    select(Sample, Host_species, Index:Diversity)
+```
+
+The Inverse Simpson index is not sensitive to rare taxa and so should not be
+significantly affected by read depth in the range of read depths of our
+samples. We can confirm by plotting diversity against read depth and making
+sure there is not an increasing pattern,
+```{r, fig.width = 8}
+div %>%
+    filter(Host_species %in% c("Canine", "Equine"), Index == "InvSimp") %>%
+    ggplot(aes(Sample_sum, Diversity, color = Host_species, shape = CD)) + 
+    geom_point() +
+    facet_wrap(Host_species~Rank, scales = "free") +
+    expand_limits(y = 0) +
+    scale_color_manual(values = colors.host_species, guide = FALSE) +
+    scale_shape_manual(values = shape.cd) + 
+    labs(x = "Read depth", y = "Alpha diversity (Inverse Simpson)",
+        shape = italicize("C. difficile")) +
+    scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+    theme(axis.line.x=element_line(), axis.line.y=element_line(),
+        legend.position=c(0,1), legend.justification=c(0,1)
+    )
+```
+
+We'll order the host species from most to least diverse (based on the median
+over all ranks and samples);
+```{r, fig.width=9, fig.height=5}
+p1 <- div %>%
+    mutate(Host_species = fct_reorder(Host_species, Diversity)) %>%
+    ggplot(aes(Host_species, Diversity, color = Host_species, shape = CD)) + 
+    geom_quasirandom() +
+    facet_wrap(~Rank, scales = "free") +
+    expand_limits(y = 0) +
+    scale_color_manual(values = colors.host_species, guide = FALSE) +
+    scale_shape_manual(values = shape.cd) + 
+    labs(x = "Host species", y = "Alpha diversity (Inverse Simpson)",
+        shape = italicize("C. difficile")) +
+    scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+    theme(legend.position=c(0,1), legend.justification=c(0,1))
+# p1
+```
+
+### Beta diversity
+
+We'll perform NMDS using Bray-Curtis dissimilarity at the ASV level.
+```{r}
+ord <- ps %>%
+    ordinate(method = "NMDS", distance = "bray", trymax = 50)
+p2 <- plot_ordination(ps, ord, color = "Host_species", 
+    shape = "CD", type="samples") + 
+    geom_point() + 
+    scale_color_manual(values = colors.host_species) +
+    scale_shape_manual(values = shape.cd) +
+    labs(color = "Host species", shape = italicize("C. difficile"))
+# p2
+```
+
+### Figure for manuscript
+
+```{r, fig.width = 8, fig.height = 7, fig.asp = NULL}
+cowplot::plot_grid(p1, p2,
+    nrow=2, labels = "AUTO")
+```
+
+```{r, include = FALSE}
+ggsave(here("figures", "Figure2.pdf"),
+    width = 8, height = 7, units = "in", useDingbats = FALSE)
+```
+
+## Alpha diversity and _C. difficile_ in canines and equines
+
+Here we test for an association of _C. difficile_ with alpha diversity in
+canines and equines, the only species with a substantial number of CD+ samples,
+
+First, get a data frame subset to just canines and equines,
+```{r}
+div0 <- div %>%
+    filter(Host_species %in% c("Canine", "Equine"))
+```
+Create a 2-panel figure, showing diversity in CD- and CD+ samples, at the three
+taxonomic ranks, for the two hosts,
+```{r}
+div0.split <- div0 %>%
+    mutate(Host_copy = Host_species) %>%
+    group_by(Host_copy) %>%
+    nest %>%
+    arrange(Host_copy) %>%
+    mutate(plot = map2(Host_copy, data, 
+        ~ggplot(.y, aes(CD, Diversity, color = Host_species, shape = CD)) + 
+            stat_summary(
+                fun.ymin = function(z) { quantile(z,0.25) },
+                fun.ymax = function(z) { quantile(z,0.75) },
+                fun.y = median, shape = 95, fatten = 20) +
+            geom_quasirandom() +
+            facet_wrap(~Rank, scales = "free") +
+            expand_limits(y = 0) +
+            scale_color_manual(values = colors.host_species, guide = FALSE) +
+            scale_shape_manual(values = shape.cd) + 
+            labs(x = italicize("C. difficile"), 
+                y = "Alpha diversity (Inverse Simpson)",
+                shape = italicize("C. difficile"),
+                title = .x
+                ) +
+            scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+            theme(legend.position = "none")
+        ))
+```
+
+```{r, fig.width = 8, fig.height = 7, fig.asp = NULL}
+plot_grid(plotlist = div0.split$plot, ncol = 1, labels = c("A", "B"))
+```
+
+```{r, include = FALSE}
+ggsave(here("figures", "InvSimp_CD.pdf"),
+    width = 8, height = 7, units = "in", useDingbats = FALSE)
+```
+
+Use a two-sided wilcox.test to test for higher or lower diversity in CD+/-
+samples, for each rank and host. The confidence intervals are for the median
+difference between a CD- and CD+ sample, with negative values indicating a
+lower diversity in CD+ samples.
+```{r}
+tb <- div0 %>%
+    group_by(Host_species, Rank) %>%
+    nest %>%
+    mutate(fit = map(data, ~wilcox.test(data = ., -Diversity ~ CD, 
+                alternative = "two.sided", conf.int = TRUE, exact = TRUE))
+        ) %>%
+    unnest(map(fit, broom::glance)) %>%
+    select(-data, -starts_with("fit")) %>%
+    arrange(Host_species, Rank)
+# Canines:
+tb %>% filter(Host_species == "Canine") %>% select(-Host_species)
+# Equines:
+tb %>% filter(Host_species == "Equine") %>% select(-Host_species)
+```
+
+## Beta diversity and _C. difficile_ in canines and equines
+
+Here we perform a permanova test using the adonis2 function in vegan to
+identify if there is a significant difference in the microbiome profiles
+between CD+ and CD- samples within animal groups canine and equine. As above,
+we use Bray-Curtis similarity, but we only examine the ASV-level profiles.
+```{r}
+set.seed(1234)
+#### Canine
+ps.canine <- ps %>%
+    subset_samples(Host_species == "Canine") %>%
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+# Calculate Bray-Curtis dissimilarity between samples:
+bray.canine <- phyloseq::distance(ps.canine, method = "bray")
+# Create sample-data data frames for adonis2
+df.canine <- data.frame(sample_data(ps.canine))
+# Permanova
+(perm.canine <- vegan::adonis2(bray.canine ~ CD, data = df.canine,
+        permutations = 4e4))
+#### Equine
+ps.equine <- ps %>%
+    subset_samples(Host_species == "Equine") %>%
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+# Calculate Bray-Curtis dissimilarity between samples:
+bray.equine <- phyloseq::distance(ps.equine, method = "bray")
+# Create sample-data data frames for adonis2
+df.equine <- data.frame(sample_data(ps.equine))
+# Permanova
+(perm.equine <- vegan::adonis2(bray.equine ~ CD, data = df.equine,
+        permutations = 4e4))
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
