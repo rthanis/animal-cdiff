@@ -1,0 +1,305 @@
+---
+title: "Logistic regression of C. difficile ~ C. hiranonis"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggthemes)
+library(ggstance)
+library(cowplot)
+library(brms)
+library(tidybayes)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds")) %>%
+    subset_samples(Host_species %in% c("Canine", "Feline", "Equine", 
+            "Ovine")) %>% 
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+# Make variable CD to be our indicator of Cdiff presence for this analysis
+sample_data(ps)$CD <- sample_data(ps)$CD_either
+# Shorten the sample names
+sample_names(ps) <- sample_names(ps) %>%
+    str_match("(.+)_") %>% 
+    .[,2]
+sam <- sample_data(ps) %>% as_tibble
+```
+
+Get a data frame formatted for the regressions
+```{r}
+tb <- ps %>%
+    subset_samples(Host_species == "Canine") %>%
+    prune_taxa(c("ASV4", "ASV62"), .) %>%
+    as_tibble(tax = FALSE) %>%
+    spread(Taxon, Abundance) %>%
+    mutate(
+        CH = factor((ASV4 > 0) + (ASV62 > 0)),
+        ASV4_present = ASV4 > 0,
+        ASV62_present = ASV62 > 0
+    )
+```
+The variable `CH` indicates whether 0, 1, or 2 of the two ASVs are present in
+the sample; thus `CH==1` and `CH==2` correspond to the two putative C. hiranonis
+strains. Since ASV4 is always present if any C. hiranonis ASV is, we can use
+ASV4 presence as an indicator of C. hiranonis presence.
+
+Set the seed,
+```{r}
+set.seed(42)
+```
+
+## Failure of standard logistic regression due to perfect separation
+
+Since all canines with ASV62 are CD-, standard logistic regression with the
+`glm` function can't be used to estimate the effect of ASV62 or CH2,
+```{r}
+m1 <- glm(data = tb, family = binomial, CD ~ CH)
+m1
+confint(m1)
+```
+
+## Bayesian logistic regression
+
+We can solve this problem by using Bayesian logistic regression with
+weakly-informative priors to bound the effect sizes.
+
+### Picking priors
+
+We'll use a t distribution with 7 degrees of freedom with the spread set so
+that the 0.01 and 0.99 quantiles on the baseline Cdiff prevalence are roughly
+0.01 and 0.99 (e.g., less than 0.01 probability of a prevalance < 0.01),
+```{r}
+df_t <- 7
+sigma_t <- 1.53
+inv_logit_scaled(qt(c(0.01, 0.1, 0.9, 0.99), df_t) * sigma_t)
+```
+and that the odds ratios are bounded so that the 0.01 and 0.99 quantiles
+correspond to odds ratios of 1/200 and 200,
+```{r}
+df_t <- 7
+sigma_t <- 1.77
+exp(qt(c(0.01, 0.1, 0.9, 0.99), 7) * sigma_t)
+```
+
+```{r}
+base_prior <- c(
+    prior(student_t(7, 0, 1.53), class = Intercept),
+    prior(student_t(7, 0, 1.77), class = b)
+)
+```
+
+### C. hiranonis-only model
+
+```{r}
+b1 <- brm(data = tb, family = bernoulli, CD ~ CH, 
+    prior = base_prior)
+b1
+```
+Here, CH1 and CH2 denote the effects of the putative different strains of C.
+hiranonis. 
+
+Note, we expect the estimate for CH2 is sensitive to the width of the prior due
+to the lack of any CD+ canines with ASV62.
+
+Baseline prevalence:
+```{r}
+b1 %>% 
+    fixef(pars = "Intercept", probs = c(0.05, 0.1, 0.9, 0.95)) %>% 
+    inv_logit_scaled
+```
+Coefficients in log-odds space:
+```{r}
+b1 %>% 
+    fixef(probs = c(0.05, 0.1, 0.9, 0.95))
+```
+Odds-ratios:
+```{r}
+b1 %>% 
+    fixef(probs = c(0.05, 0.1, 0.9, 0.95)) %>% 
+    exp
+```
+
+### Antibiotics, GI status, and Sex
+
+Note, there are four samples that are missing information about these
+variables, and so we need to first remove these samples.
+```{r}
+tb %>%
+    filter_at(vars(Ab_status, GI_status, Sex), any_vars( . == "Not known")) %>%
+    select(Sample, Ab_status, GI_status, Sex)
+tb2 <- tb %>%
+    filter_at(vars(Ab_status, GI_status, Sex), all_vars(. != "Not known")) %>%
+    mutate_at(vars(Ab_status, GI_status, Sex), fct_drop)
+tb2 %>%
+    group_by(Ab_status, GI_status, Sex) %>%
+    count
+```
+Now let's add Antibiotics, GI status, and Sex to the model,
+```{r}
+b2 <- brm(data = tb2, family = bernoulli,
+    CD ~ Ab_status + GI_status + Sex + CH,
+    prior = base_prior
+)
+b2
+```
+
+Plot:
+```{r}
+lvls <- paste0("b_", c("Intercept", "GI_statusGIcondition", "Ab_statusTreated",
+        "SexM", "CH1", "CH2"))
+labeller <- function(lvl) {
+    lvl %>% 
+        str_replace("b_", "") %>% 
+        str_replace("_", " ")
+}
+b2 %>%
+    gather_draws(`b_.+`, regex = TRUE) %>%
+    ggplot(aes(y = factor(.variable, rev(lvls)), x = .value)) +
+    geom_vline(xintercept = 0, color = "grey") +
+    stat_intervalh(.width = c(.50, .80, .95, .99)) +
+    scale_x_continuous(limits = c(-7, 3), oob = scales::squish) +
+    scale_y_discrete(labels = labeller) +
+    scale_color_brewer() +
+    labs(y = "Variable", x = "Value of coefficient",
+        title = "Coefficients from logistic regression of CD+",
+        color = "Credible\ninterval") +
+    guides(colour = guide_legend(reverse = TRUE)) +
+    theme_minimal() + 
+    theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+ggsave(here("figures", "logreg-cd.pdf"), 
+    width = 5, height = 3, units = "in")
+```
+
+Note, the lower end of the credible interval for the `CH2` coefficient is
+clipped at `-7`.
+
+### Age
+
+Now we'll add age to the model. As before, we'll drop the samples without age
+information,
+```{r}
+tb2 %>%
+    group_by(is.na(Age)) %>%
+    count
+tb3 <- tb2 %>%
+    filter(!is.na(Age))
+```
+Note, 26% of the samples have been dropped due to missing ages.
+
+Recall that there appeared to be a non-monotonic effect of age. We can try to
+account for this effect with a spline, First, let's test the age-only model.
+We'll use the default prior on the spline standard deviation.
+```{r}
+b.age <- brm(data = tb3, family = bernoulli,
+    CD ~ s(Age),
+    prior = base_prior,
+    control = list(adapt_delta = 0.95)
+)
+```
+
+Compare the predicted prevalence to the distribution of observed cases:
+```{r}
+f <- tibble(Age = seq(0, 16, by = 0.1)) %>%
+    bind_cols(., fitted(b.age, ., probs = c(0.1, 0.9)) %>% as_tibble)
+f %>%
+    ggplot(aes(Age, Estimate)) +
+    geom_ribbon(aes(ymin = Q10, ymax = Q90), 
+        linetype = 0, alpha = 0.2) +
+    geom_line() +
+    geom_quasirandom(data = tb3, aes(Age, as.integer(CD) - 1), 
+        inherit.aes = FALSE, groupOnX = FALSE, width = 0.05, alpha = 0.7) +
+    labs(y = "CD prevalence", x = "Age (years)")
+```
+
+We can see that the spline captures the higher prevalance at intermediate ages
+and the possible uptick at very old ages.
+
+Now, add the age spline to the multivariate model:
+```{r}
+b3 <- brm(data = tb3, family = bernoulli,
+    CD ~ Ab_status + GI_status + Sex + s(Age) + CH,
+    prior = base_prior,
+    control = list(adapt_delta = 0.98)
+)
+```
+
+Check the posteriors and chains:
+```{r, fig.asp = 2.2}
+plot(b3, N = 10)
+```
+
+Compare the CH coefficients of the three models:
+```{r}
+b1 %>% fixef(probs = c(0.05, 0.1, 0.9, 0.95), pars = c("CH1", "CH2"))
+b2 %>% fixef(probs = c(0.05, 0.1, 0.9, 0.95), pars = c("CH1", "CH2"))
+b3 %>% fixef(probs = c(0.05, 0.1, 0.9, 0.95), pars = c("CH1", "CH2"))
+```
+
+```{r}
+list(b1, b2, b3) %>%
+    map_dfr(gather_draws, `b_CH.`, regex = TRUE, .id = "model") %>%
+    ggplot(aes(y = fct_rev(model), x = .value)) +
+    geom_vline(xintercept = 0, color = "grey") +
+    geom_halfeyeh(.width = c(0.66, 0.95)) +
+    facet_wrap(~.variable, scales = "free_x")
+```
+
+The CH coefficients are consistent in the three models. The estimation error
+increases and the mean estimate of the CH2 effect lessens somewhat for the
+model with age, but greater shrinkage is expected from the smaller sample size.
+
+Visualize the predictions of the full model in the absence of a GI condition,
+```{r}
+f3 <- crossing(
+    Age = seq(0, 16, by = 0.1),
+    Ab_status = c("Non-treated", "Treated"),
+    Sex = c("F", "M"),
+    GI_status = c("Healthy"),
+    CH = factor(c(0, 1, 2)),
+    ) %>%
+    bind_cols(., fitted(b3, ., probs = c(0.1, 0.9)) %>% as_tibble)
+f3 %>%
+    ggplot(aes(Age, Estimate, color = CH)) +
+    geom_ribbon(aes(ymin = Q10, ymax = Q90, fill = CH), 
+        linetype = 0, alpha = 0.2) +
+    geom_line() +
+    facet_grid(Sex ~ Ab_status) +
+    geom_quasirandom(data = tb3, aes(Age, as.integer(CD) - 1, color = CH), 
+        inherit.aes = FALSE, groupOnX = FALSE, width = 0.05, alpha = 0.7) +
+    ggthemes::scale_color_colorblind() +
+    ggthemes::scale_fill_colorblind() +
+    labs(y = "CD prevalence", x = "Age (years)") +
+    theme(panel.spacing.y = unit(5, "mm"))
+```
+
+## Session info
+
+```{r}
+sessionInfo()
+```
