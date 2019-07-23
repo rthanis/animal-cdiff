@@ -1,0 +1,325 @@
+---
+title: "Taxonomy"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+    highlight: tango
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = FALSE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+Load the packages we will use:
+```{r load_packages}
+library(speedyseq)
+library(tidyverse)
+library(here)
+library(rBLAST)
+```
+Other packages we will functions from: `Biostrings` and `rentrez`.
+
+Load the phyloseq object created after running DADA2: 
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds"))
+print(ps)
+asvs <- refseq(ps)
+print(asvs)
+```
+
+The R-markdown document `01-dada2.Rmd` performed taxonomic assignment against
+Silva using DADA2's implementation of the RDP algorithm (up to Genus) and exact
+matching of ASV sequence for species assignment. This document examines these
+taxonomy assignments and manually assigns taxonomy to ASVs for taxa of interest
+that are not in the Silva database.  As we show below, the Silva assignment is
+sufficient for identifying Clostridioides difficile to the species level but
+not [Clostridium] hiranonis and [Clostridium] scindens. For these last two, we
+use BLAST against available NCBI 16S sequences to identify the ASVs likely to
+derive from each species.
+
+# Inspecting the Silva taxonomy assignment
+
+Get the fraction of reads assigned at each taxonomic level:
+```{r}
+pstb <- psmelt(ps) %>%
+    as_tibble %>%
+    dplyr::rename(ASV = OTU)
+tb.reads <- pstb %>%
+    gather("Rank", "Name", rank_names(ps)) %>%
+    group_by(Rank) %>%
+    summarize(
+        Reads_classified = sum(Abundance * !is.na(Name)),
+        Reads_total = sum(Abundance)
+    ) %>%
+    mutate(Frac_classified = Reads_classified / Reads_total) %>%
+    # Sort the table by ranks
+    mutate(Rank = factor(Rank, rank_names(ps))) %>%
+    arrange(Rank)
+tb.reads
+```
+and the fraction of ASVs at each taxonomic level:
+```{r}
+tax <- tax_table(ps) %>% as("matrix") %>% as_tibble(rownames = "ASV")
+tb.asvs <- tax %>%
+    gather("Rank", "Name", rank_names(ps)) %>%
+    group_by(Rank) %>%
+    summarize(
+        ASVs_classified = sum(!is.na(Name)),
+        ASVs_total = n()
+    ) %>%
+    mutate(Frac_classified = ASVs_classified / ASVs_total) %>%
+    mutate(Rank = factor(Rank, rank_names(ps))) %>%
+    arrange(Rank)
+tb.asvs
+```
+Also consider how fraction of assigned reads differs among the host animals:
+```{r}
+tb.reads.byhost <- pstb %>%
+    gather("Rank", "Name", rank_names(ps)) %>%
+    group_by(Host_species, Rank) %>%
+    summarize(
+        Reads_classified = sum(Abundance * !is.na(Name)),
+        Reads_total = sum(Abundance)
+    ) %>%
+    mutate(Frac_classified = Reads_classified / Reads_total) %>%
+    mutate(Rank = factor(Rank, rank_names(ps))) %>%
+    arrange(Host_species, Rank)
+tb.reads.byhost %>%
+    select(Host_species, Rank, Frac_classified) %>%
+    spread(Rank, Frac_classified)
+```
+
+Is the taxonomic name at a particular rank enough to specify the taxon?
+```{r}
+# Check that each taxonomic name at a particular rank is unique
+for (r in seq_along(rank_names(ps))) {
+    r.name <- rank_names(ps)[r]
+    print(paste("Checking", r.name))
+    tax %>%
+        # Select just up to that rank
+        select(rank_names(ps)[seq(r)]) %>%
+        # Restrict to just one row per taxonomic tuple
+        distinct %>%
+        # Count the number of distinct taxa for each name at the focal rank
+        group_by_at(vars(r.name)) %>%
+        count %>%
+        # Remove case where the name is missing
+        filter(!is.na(!!sym(r.name))) %>%
+        # Check the count is 1 for each name
+        {all(.$n == 1)} %>%
+        print
+}
+```
+From this, we can see that most ranks do not have duplicate names; but Species
+name (expected) and Family (somewhat unexpected) do have duplicates. Let's look
+at the offending Family(s),
+```{r}
+tax %>%
+    select(rank_names(ps)[1:5]) %>%
+    distinct %>%
+    group_by(Family) %>%
+    mutate(n = n()) %>%
+    filter(!is.na(Family), n > 1)
+```
+So with the exception of `Family == "Family_XI"`, we can select a taxon based
+on its name at a particular non-species rank.
+
+# Identifying species of interest in our DADA2-derived ASVs
+
+## Clostridioides difficile
+
+The Silva taxonomy assignment is stored in the `tax_table` of the phyloseq
+object,
+```{r}
+tax <- tax_table(ps) %>% as("matrix") %>% as_tibble(rownames = "ASV")
+```
+which we check to see if C. difficile was identified,
+```{r}
+clostridioides <- tax %>% 
+    filter(str_detect(Genus, "Clostridioides"))
+clostridioides %>%
+    select(ASV, Family, Genus, Species)
+```
+Of four ASVs assigned to the Clostridioides genus, three ASVs were classified
+to the species level as C. difficile, indicating an exact match to a strain
+classified as C. difficile in the Silva species database.
+
+Examining the edit distance between these sequences,
+```{r}
+clostridioides %>%
+    arrange(Species) %>%
+    {asvs[.$ASV]} %>%
+    Biostrings::stringDist(upper = TRUE)
+```
+shows that the three C. diff sequences are within 1 bp of ASV82, and that the
+ASV with unassigned species is 2 bp away from ASV82.
+
+Let's check what the next closest ASVs are to the ASVs classified as C.
+difficile. I'll use ASV82 as our representative
+```{r}
+w <- whichPDict(asvs, asvs[["ASV82"]], max.mismatch = 6, with.indels = TRUE)
+# asvs[w,]
+d <- asvs[w,] %>%
+    Biostrings::stringDist(upper = TRUE) %>%
+    as("matrix")
+dtb <- enframe(d["ASV82",], "ASV", "Dist_from_ASV82")
+tax %>%
+    filter(ASV %in% names(asvs[w,])) %>%
+    arrange(Genus, Species) %>%
+    select(ASV, Family, Genus, Species) %>%
+    left_join(dtb, by = "ASV")
+```
+The next closest ASVs are at least 5bp from ASV82 (and thus at least 4bp from
+the other C. diff ASVs) and are not classified to the Clostridioides genus.
+
+Properties of these various ASVs in our samples are explored in the C.
+difficile analysis Rmd.
+
+## [Clostridium] hiranonis and [Clostridium] scindens
+
+Our DADA2 + Silva tax assignment identifies some species with Silva
+identifiers; let's check if C. hiranonis or C. scindens might be identified
+that way:
+```{r}
+tax %>% filter(str_detect(Species, "hiranonis"))
+tax %>% filter(str_detect(Species, "scindens"))
+```
+We do not find them, but this could simply be because these species are not in
+the Silva species database.
+
+### BLASTing against NCBI 16S sequences
+
+Instead, we can try BLASTing our ASV sequences against the 16S sequences for C.
+hiranonis and C. scindens that are available in NCBI.
+
+16S sequences:
+
+- <https://www.ncbi.nlm.nih.gov/nuccore/NR_028611.1>
+- <https://www.ncbi.nlm.nih.gov/nuccore/NR_028785.1>
+
+RefSeq assemblies (not used):
+
+- <https://www.ncbi.nlm.nih.gov/assembly/GCF_000156055.1>
+- <https://www.ncbi.nlm.nih.gov/assembly/GCF_000154505.1>
+
+We first fetch the C. hiranonis and C. scindens 16s sequences using the
+[rentrez](https://github.com/ropensci/rentrez) package and save them in a
+temporary folder.
+```{r}
+accs <- c("NR_028611", "NR_028785")
+fasta <- rentrez::entrez_fetch(db="nuccore", accs, rettype = "fasta")
+# write_lines(fasta, here("data", "reference-sequences.fasta"))
+tmp <- tempdir()
+write_lines(fasta, file.path(tmp, "reference-sequences.fasta"))
+# Read in as a DNAStringSet to get sequence headers
+refs <- Biostrings::readDNAStringSet(file.path(tmp,
+        "reference-sequences.fasta"))
+```
+Then, we save the sequences and build a BLAST database in a temporary folder.
+We use the interface to the BLAST command-line tools provided by the [rBLAST
+package](https://github.com/mhahsler/rBLAST) package.
+```{r}
+makeblastdb(file.path(tmp, "reference-sequences.fasta"), dbtype = "nucl",
+    args = "-parse_seqids")
+```
+Now we BLAST all ASVs against the database, using a 97% identity cutoff.
+```{r}
+db <- blast(file.path(tmp, "reference-sequences.fasta"))
+db
+# Table for matching the saccver with the name of the sequence
+acc_to_name <- tibble(Header = names(refs)) %>%
+    extract(Header, c("SubjectID", "Subject_name"), 
+        regex = "([^ ]+) (.+)")
+acc_to_name 
+# Run blast
+res <- predict(db, asvs, 
+    BLAST_args = "-perc_identity 97 -num_threads 3",
+    ) %>%
+    as_tibble
+res
+# Use strings rather than factors, and add the sequence names
+res <- res %>%
+    mutate_if(is.factor, as.character) %>%
+    left_join(acc_to_name, by = "SubjectID")
+```
+Check that the results are good matches:
+```{r}
+res %>%
+    group_by(Alignment.Length, Perc.Ident) %>%
+    count()
+```
+All good except the 55-bp alignment, which we'll now drop.
+```{r}
+res <- res %>%
+    filter(Alignment.Length > 250)
+```
+
+Reformat to save and use later on:
+```{r}
+asvtb <- asvs %>%
+    as.character %>%
+    enframe("ASV", "Sequence")
+res0 <- res %>%
+    left_join(asvtb, by = c("QueryID" = "ASV")) %>%
+    # Get species from first two words of the name
+    mutate(NCBI_species = str_extract(Subject_name,
+            "([^ ]+ [^ ]+)")) %>%
+    select(ASV = QueryID, NCBI_acc = SubjectID, 
+        NCBI_name = Subject_name, NCBI_species,
+        Perc_ident = Perc.Ident, Alignment_length = Alignment.Length,
+        Mismatches, Gap_openings = Gap.Openings, ASV_sequence = Sequence)
+write_csv(res0, here("results", "hiranonis-and-scindens.csv"))
+```
+
+Overview of the matches:
+```{r}
+res0 %>%
+    group_by(NCBI_acc, NCBI_species, Mismatches, Perc_ident) %>%
+    summarize(Num_ASVs = n())
+```
+We have various ASVs within 99% identity of the C. hiranonis reference
+sequence, including one that is an exact match, and 1 ASV that is an exact
+match to the C. scindens reference strain.
+
+Let's see how these species were classified by Silva and DADA2's implementation
+of the RDP algorithm:
+```{r}
+res0 %>%
+    left_join(tax, by =  "ASV") %>%
+    select(NCBI_species, Family, Genus, Species) %>%
+    distinct()
+```
+Given the perfect identity of one ASV for each NCBI species, the lack of
+species identification indicates that these reference sequences are not in the
+Silva species database.
+
+### Add NCBI BLAST hits to the taxonomy table
+
+```{r}
+tax <- tax_table(ps) %>% as("matrix") %>% as_tibble(rownames = "ASV")
+tax <- left_join(tax, res0 %>% select(ASV, NCBI_species), 
+    by = "ASV")
+taxmat <- tax %>% select(-ASV) %>% as("matrix")
+rownames(taxmat) <- tax$ASV
+tax_table(ps) <- tax_table(taxmat)
+saveRDS(ps, here("results", "ps.Rds"))
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
+
