@@ -1,0 +1,355 @@
+BLASTN 2.9.0+
+Reference: Zheng Zhang, Scott Schwartz, Lukas Wagner, and
+Webb Miller (2000), "A greedy algorithm for aligning DNA
+sequences", J Comput Biol 2000; 7(1-2):203-14.
+
+
+RID: B9S7C2XP01R
+
+
+Database: 16S ribosomal RNA (Bacteria and Archaea)
+           20,767 sequences; 30,197,202 total letters
+Query= 
+Length=252
+
+
+                                                                   Score        E      Max
+Sequences producing significant alignments:                       (Bits)     Value   ident
+
+NR_028611.1 [Clostridium] hiranonis strain TO-931 16S ribosoma...  466        3e-131  100%        
+NR_113132.1 Clostridioides difficile ATCC 9689 = DSM 1296 stra...  399        3e-111  95%         
+NR_027573.1 Intestinibacter bartlettii strain WAL 16138 16S ri...  399        3e-111  95%         
+NR_112172.1 Clostridioides difficile ATCC 9689 = DSM 1296 16S ...  399        3e-111  95%         
+NR_117641.1 Peptostreptococcus canis strain CCUG 57081 16S rib...  394        1e-109  95%         
+NR_119034.1 Asaccharospora irregularis DSM 2635 16S ribosomal ...  392        4e-109  95%         
+NR_137408.1 Terrisporobacter petrolearius strain LAM0A37 16S r...  388        6e-108  94%         
+NR_117174.1 [Eubacterium] tenue strain DSM 20695 16S ribosomal...  383        3e-106  94%         
+NR_104812.1 [Eubacterium] tenue strain DSM 20695 16S ribosomal...  383        3e-106  94%         
+NR_104744.1 Terrisporobacter mayombei strain SFC-5 16S ribosom...  383        3e-106  94%         
+
+ALIGNMENTS
+>NR_028611.1 [Clostridium] hiranonis strain TO-931 16S ribosomal RNA, partial 
+sequence
+Length=1393
+
+ Score = 466 bits (252),  Expect = 3e-131
+ Identities = 252/252 (100%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  444  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  503
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  504  CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  563
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  564  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  623
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  624  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  683
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  684  GGAGCAAACAGG  695
+
+
+>NR_113132.1 Clostridioides difficile ATCC 9689 = DSM 1296 strain JCM 1296 
+16S ribosomal RNA, partial sequence
+Length=1464
+
+ Score = 399 bits (216),  Expect = 3e-111
+ Identities = 240/252 (95%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  489  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  548
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            |||||||||||| ||||||||||||||||||||||||||||| ||| ||||   ||||||
+Sbjct  549  CAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGGAGACTTG  608
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  609  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  668
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            ||||||||| |||||||||||| |||||||||||||||||||||||||||||||||||||
+Sbjct  669  AACACCAGTTGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  728
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  729  GGAGCAAACAGG  740
+
+
+>NR_027573.1 Intestinibacter bartlettii strain WAL 16138 16S ribosomal RNA, 
+partial sequence
+Length=1429
+
+ Score = 399 bits (216),  Expect = 3e-111
+ Identities = 240/252 (95%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  471  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  530
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+             ||||||||||| ||||||||||||||||||||||||||||| ||| ||||   ||||||
+Sbjct  531  TAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGAGGACTTG  590
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  591  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  650
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||
+Sbjct  651  AACACCAGTAGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  710
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  711  GGAGCAAACAGG  722
+
+
+>NR_112172.1 Clostridioides difficile ATCC 9689 = DSM 1296 16S ribosomal RNA, 
+partial sequence
+Length=1466
+
+ Score = 399 bits (216),  Expect = 3e-111
+ Identities = 240/252 (95%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  480  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  539
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            |||||||||||| ||||||||||||||||||||||||||||| ||| ||||   ||||||
+Sbjct  540  CAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGGAGACTTG  599
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  600  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  659
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            ||||||||| |||||||||||| |||||||||||||||||||||||||||||||||||||
+Sbjct  660  AACACCAGTTGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  719
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  720  GGAGCAAACAGG  731
+
+
+>NR_117641.1 Peptostreptococcus canis strain CCUG 57081 16S ribosomal RNA, 
+partial sequence
+Length=1436
+
+ Score = 394 bits (213),  Expect = 1e-109
+ Identities = 240/253 (95%), Gaps = 2/253 (1%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            |||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||
+Sbjct  513  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGTGGTCTTT  572
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGC-TCCTGATACTGTCTGACTT  119
+            |||||| |  |||||||||||||||||||||||||||||| ||| || |||||  |||||
+Sbjct  573  CAAGTCGGTGGTTAAAGGCTACGGCTCAACCGTAGTAAGCCTCC-GAAACTGTTAGACTT  631
+
+Query  120  GAGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAG  179
+            |||||||||||||||||| |||||||||||||||||||||||||||||||||||||||||
+Sbjct  632  GAGTGCAGGAGAGGAAAGTGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAG  691
+
+Query  180  GAACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTG  239
+            ||||||||||||||||||||||||||||||||| ||||||| ||||||||||||||||||
+Sbjct  692  GAACACCAGTAGCGAAGGCGGCTTTCTGGACTGCAACTGACACTGAGGCACGAAAGCGTG  751
+
+Query  240  GGGAGCAAACAGG  252
+            || ||||||||||
+Sbjct  752  GGTAGCAAACAGG  764
+
+
+>NR_119034.1 Asaccharospora irregularis DSM 2635 16S ribosomal RNA, partial 
+sequence
+Length=1489
+
+ Score = 392 bits (212),  Expect = 4e-109
+ Identities = 239/252 (95%), Gaps = 1/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  488  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  547
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            |||||||||||| ||||||||||||||||||||||||||||| ||| ||||   ||||||
+Sbjct  548  CAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGGAGACTTG  607
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  608  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  667
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||| ||| |||||||||||||||||||||||||||||||||||||
+Sbjct  668  AACACCAGTAGCGAAGGC-GCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  726
+
+Query  241  GGAGCAAACAGG  252
+            ||||| ||||||
+Sbjct  727  GGAGCGAACAGG  738
+
+
+>NR_137408.1 Terrisporobacter petrolearius strain LAM0A37 16S ribosomal RNA, 
+partial sequence
+Length=1405
+
+ Score = 388 bits (210),  Expect = 6e-108
+ Identities = 238/252 (94%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            |||||||||||||||||||||||||||||||||||||||||||||||||||| ||| |||
+Sbjct  458  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGTGGTTTTT  517
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+             ||||||||||| ||||||||||||||||||||||||||||| ||| ||||    |||||
+Sbjct  518  TAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGGAAACTTG  577
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            ||||||||||||||||| |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  578  AGTGCAGGAGAGGAAAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  637
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||
+Sbjct  638  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACACTGAGGCACGAAAGCGTGG  697
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  698  GGAGCAAACAGG  709
+
+
+>NR_117174.1 [Eubacterium] tenue strain DSM 20695 16S ribosomal RNA, partial 
+sequence
+Length=1492
+
+ Score = 383 bits (207),  Expect = 3e-106
+ Identities = 237/252 (94%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            |||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||
+Sbjct  484  TACGTAGGGGGCTAGCGTTATCCGGAATTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  543
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            |||| ||| ||| ||||||||||||||||||||||||||||  ||  |||||  ||||||
+Sbjct  544  CAAGCCAGAAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTTTTGGAACTGTAAGACTTG  603
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  604  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  663
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||
+Sbjct  664  AACACCAGTAGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  723
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  724  GGAGCAAACAGG  735
+
+
+>NR_104812.1 [Eubacterium] tenue strain DSM 20695 16S ribosomal RNA, partial 
+sequence
+Length=1495
+
+ Score = 383 bits (207),  Expect = 3e-106
+ Identities = 237/252 (94%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            |||||||||||||||||||||||||| |||||||||||||||||||||||||||||||||
+Sbjct  486  TACGTAGGGGGCTAGCGTTATCCGGAATTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  545
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+            |||| ||| ||| ||||||||||||||||||||||||||||  ||  |||||  ||||||
+Sbjct  546  CAAGCCAGAAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTTTTGGAACTGTAAGACTTG  605
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            |||||||||||||| || |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  606  AGTGCAGGAGAGGAGAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  665
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||||||| |||||||||||||||||||||||||||||||||||||
+Sbjct  666  AACACCAGTAGCGAAGGCGGCTCTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  725
+
+Query  241  GGAGCAAACAGG  252
+            ||||||||||||
+Sbjct  726  GGAGCAAACAGG  737
+
+
+>NR_104744.1 Terrisporobacter mayombei strain SFC-5 16S ribosomal RNA, partial 
+sequence
+Length=1494
+
+ Score = 383 bits (207),  Expect = 3e-106
+ Identities = 237/252 (94%), Gaps = 0/252 (0%)
+ Strand=Plus/Plus
+
+Query  1    TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGCGGTCTTT  60
+            |||||||||||||||||||||||||||||||||||||||||||||||||||| ||| | |
+Sbjct  488  TACGTAGGGGGCTAGCGTTATCCGGATTTACTGGGCGTAAAGGGTGCGTAGGTGGTTTCT  547
+
+Query  61   CAAGTCAGGAGTTAAAGGCTACGGCTCAACCGTAGTAAGCTCCTGATACTGTCTGACTTG  120
+             ||||||||||| ||||||||||||||||||||||||||||| ||| ||||   ||||||
+Sbjct  548  TAAGTCAGGAGTGAAAGGCTACGGCTCAACCGTAGTAAGCTCTTGAAACTGGGAGACTTG  607
+
+Query  121  AGTGCAGGAGAGGAAAGCGGAATTCCCAGTGTAGCGGTGAAATGCGTAGATATTGGGAGG  180
+            ||||||||||||||||| |||||||| ||||||||||||||||||||||||||| |||||
+Sbjct  608  AGTGCAGGAGAGGAAAGTGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGG  667
+
+Query  181  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACGCTGAGGCACGAAAGCGTGG  240
+            |||||||||||||||||||||||||||||||||||||||| |||||||||||||||||||
+Sbjct  668  AACACCAGTAGCGAAGGCGGCTTTCTGGACTGTAACTGACACTGAGGCACGAAAGCGTGG  727
+
+Query  241  GGAGCAAACAGG  252
+            ||||| ||||||
+Sbjct  728  GGAGCGAACAGG  739
+
+
+  Database: 16S ribosomal RNA (Bacteria and Archaea)
+    Posted date:  Apr 8, 2019  8:35 AM
+  Number of letters in database: 30,197,200
+  Number of sequences in database:  20,767
+
+Lambda      K        H
+    1.33    0.621     1.12 
+Gapped
+Lambda      K        H
+    1.28    0.460    0.850 
+Matrix: blastn matrix:1 -2
+Gap Penalties: Existence: 0, Extension: 0
+Number of Sequences: 20767
+Number of Hits to DB: 60889
+Number of extensions: 1666
+Number of successful extensions: 1666
+Number of sequences better than 10: 1572
+Number of HSP's better than 10 without gapping: 0
+Number of HSP's gapped: 1572
+Number of HSP's successfully gapped: 1572
+Length of query: 252
+Length of database: 30197200
+Length adjustment: 23
+Effective length of query: 229
+Effective length of database: 29719559
+Effective search space: 6805779011
+Effective search space used: 6805779011
+A: 0
+X1: 13 (25.0 bits)
+X2: 32 (59.1 bits)
+X3: 54 (99.7 bits)
+S1: 13 (25.1 bits)
+S2: 16 (30.7 bits)
+
+
