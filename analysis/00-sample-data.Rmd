@@ -101,6 +101,15 @@ sam %>%
     select(Sample, Submitted_ID, Species, C_diff_lab_positive)
 ```
 
+Addendum by MM: The samples were sequenced in two different submissions to the
+Michigan Host Microbiome Initiative (HMI), and this field designates which
+submission the sample was in. Though I called this field `Year_sequenced`, the
+"2018" samples were actually sequenced in late 2017, and so this field really
+denotes when the data was first analyzed by NB and RT. Also, some of the
+samples marked "Not sequenced" were submitted for sequencing, but did not yield
+useable data because of failed library prep or sequencing or because of fears
+of contamination or mislabeling.
+
 #### Host species
 
 Change `Species` to `Host_species` to avoid conflict with the `Species`
@@ -295,7 +304,7 @@ sam %>%
 
 ## Sort and save
 
-```{r}
+```{r, eval = F}
 sam <- sam %>%
     select(Sample, Host_species, Breed, starts_with("Age"), 
     starts_with("Sex"), Neutered, 
