@@ -1,0 +1,179 @@
+---
+title: "Analyze the microbiome sequence data with DADA2"
+author: "Rajani and Mike"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The data
+
+The data includes 16S amplicon reads from animal fecal samples from Alpaca 1,
+Avian 1, Canine 105, Equine 70, Feline 15, Ovine 5. These samples were
+collected from Clinical microbiology laboratory at NCSU-CVM between the period
+of December 2016 to October 2017. The sequencing of this dataset was carried
+out on the Illumina MiSeq platform at the Microbial Systems Molecular Biology
+Laboratory (MSMBL), University of Michigan by targeting the V4 region. 200
+samples were actually send for sequencing. Naga from Ben's lab already ran
+these samples in two sets. The first set had 21 samples and the remaining was
+ran in the second set. Rajani removed few samples that were either errors/ lack
+of metadata/less read as per NB's suggestions.
+
+## The DADA2 Workflow
+
+1. Preprocessing
+2. Filter and Trim
+3. Learn Error Rates
+4. Denoise/Sample Inference
+5. Merge paired reads
+6. Remove Chimeras
+7. Assign Taxonomy
+
+## Load package and set path
+
+Load the `dada2` package, and the `here` package for setting file paths
+```{r libraries, message=FALSE, warning=FALSE}
+library(dada2); packageVersion("dada2")
+library(here)
+```
+
+Set the path to the fastq files:
+```{r path}
+path <- here("data", "reads")
+list.files(path)
+```
+
+## Forward, Reverse, Sample Names
+
+Get matched lists of the forward and reverse fastq.gz files:
+```{r filenames}
+# Forward and reverse fastq filenames have format: SAMPLENAME_R1.fastq.gz and SAMPLENAME_R2.fastq.gz
+fnFs <- sort(list.files(path, pattern="_R1_001.fastq.gz", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern="_R2_001.fastq.gz", full.names = TRUE))
+fnFs[[1]]; fnRs[[1]]
+```
+Extract sample names, assuming filenames have format: `SAMPLENAME_XXX.fastq.gz`
+```{r sample.names}
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+sample.names
+```
+
+```{r Quality Profile,warning=FALSE,message=FALSE}
+plotQualityProfile(fnFs[1:2])
+plotQualityProfile(fnRs[1:2])
+```
+
+Based on the quality profiles, I chose truncation lengths of **230** (forward)
+and **160** (reverse).
+
+Names for the filtered-reads files:
+```{r filt-names}
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+```
+
+```{r filter, message=FALSE, warning=FALSE}
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
+                     truncLen=c(230,160), maxEE=c(2,2), # maxEE=2 is the default
+                     compress=TRUE, multithread=TRUE) # Set multithread=TRUE to use all cores
+```
+
+```{r filter-stats}
+head(out)
+```
+
+## Learn the Error Rates
+
+```{r learn-errors}
+errF <- learnErrors(filtFs, multithread=TRUE) # Set multithread=TRUE to use all cores
+saveRDS(errF, here("results", "dada2", "errF.Rds"))
+errR <- learnErrors(filtRs, multithread=TRUE)
+saveRDS(errR, here("results", "dada2", "errR.Rds"))
+```
+
+Check the learned error rates
+```{r plot-errors, warning=FALSE}
+plotErrors(errF, nominalQ=TRUE)
+```
+
+## Dereplicate
+
+```{r dereplicate, message=FALSE}
+derepFs <- derepFastq(filtFs)
+derepRs <- derepFastq(filtRs)
+# Name the derep-class objects by the sample names
+names(derepFs) <- sample.names
+names(derepRs) <- sample.names
+```
+
+## Sample Inference
+
+```{r dada}
+dadaFs <- dada(derepFs, err=errF, multithread=TRUE)
+dadaRs <- dada(derepRs, err=errR, multithread=TRUE)
+saveRDS(dadaFs, here("results", "dada2", "dadaFs.Rds"))
+saveRDS(dadaRs, here("results", "dada2", "dadaRs.Rds"))
+```
+Check the results:
+```{r see-dada}
+dadaFs[[1]]
+head(getSequences(dadaFs[[1]]))
+```
+
+## Merge paired reads
+
+```{r merge, message=FALSE}
+mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose=TRUE)
+saveRDS(mergers, here("results", "dada2", "mergers.Rds"))
+```
+
+## Construct Sequence Table (ASV Table)
+
+```{r seqtab}
+seqtab <- makeSequenceTable(mergers)
+saveRDS(seqtab, here("results", "dada2", "seqtab.Rds"))
+dim(seqtab)
+```
+
+Inspect distribution of sequence lengths
+```{r seqlens}
+table(nchar(getSequences(seqtab)))
+```
+
+## Remove chimeras
+
+```{r chimeras, message=FALSE}
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", 
+    multithread=TRUE, verbose=TRUE)
+saveRDS(seqtab.nochim, here("results", "dada2", "seqtab_nochim.Rds"))
+dim(seqtab.nochim)
+sum(seqtab.nochim)/sum(seqtab)
+```
+
+## Tracking the reads through the DADA2 pipeline
+
+```{r track}
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), 
+    sapply(mergers, getN), rowSums(seqtab.nochim))
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sample.names
+head(track)
+```
+
+## Assign Taxonomy
+
+```{r taxify}
+taxa <- assignTaxonomy(seqtab.nochim,
+    here("data", "silva", "silva_nr_v132_train_set.fa.gz"),
+    multithread=TRUE)
+taxa <- addSpecies(taxa, 
+    here("data", "silva", "silva_species_assignment_v132.fa.gz"),
+    allowMultiple = TRUE, n = 1000)
+saveRDS(taxa, here("results", "dada2", "taxa.Rds"))
+```

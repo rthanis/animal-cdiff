@@ -1,0 +1,136 @@
+---
+title: "C. difficile ASV patterns"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggmosaic)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds"))
+# Shorten the sample names
+sample_names(ps) <- sample_names(ps) %>%
+    str_match("(.+)_") %>% 
+    .[,2]
+sample_data(ps) %>% as_tibble %>% glimpse
+```
+
+The variable `CD_lab` indicates results of the lab sporulation assay;
+`CD_reads` indicates the number of reads in the microbiota community sequencing
+profiles; let's make a variable `CD_seq` that is like `CD_lab`, but is
+positive if any C. difficile reads were found in the sample.
+
+```{r}
+sample_data(ps)$CD_seq <- ifelse(sample_data(ps)$CD_reads > 0,
+    "Positive", "Negative") %>% 
+    factor(c("Negative", "Positive"))
+```
+
+```{r}
+pstb <- ps %>% as_tibble %>% rename(ASV = Taxon)
+sam <- sample_data(ps) %>% as_tibble
+```
+
+## Table comparing detection of C. difficile by lab assay and community sequencing
+
+```{r}
+sam %>%
+    filter(Host_species %in% c("Canine", "Feline", "Equine", "Ovine")) %>%
+    select(CD_lab, CD_seq, Host_species) %>%
+    table %>%
+    addmargins
+```
+
+## C. difficile ASVs
+
+First, let's check the prevalence patterns of the C. difficile ASVs. We'll grab
+a data frame with just the C diff ASVs,
+```{r}
+cd <- pstb %>%
+    filter(Genus == "Clostridioides", Species == "difficile") %>%
+    mutate(Present = Abundance > 0, Proportion = Abundance / Sample_sum)
+```
+and get a quick overview of the prevalence in different hosts,
+```{r}
+cd %>%
+    filter(Present) %>%
+    group_by(Host_species, ASV) %>%
+    count %>%
+    arrange(Host_species, -n)
+```
+So ASV82 is by far the most common; we only see the other two ASVs in two
+equine samples each. Let's see what these samples are,
+```{r}
+samples <- cd %>%
+    filter(Present, ASV != "ASV82") %>%
+    .$Sample %>%
+    unique
+samples
+cd %>%
+    filter(Sample %in% samples, Present) %>%
+    select(ASV, Sample, Abundance, Proportion, Host_species, Breed, Age)
+```
+So both of these other ASVs are appearing together, and along with ASV82, in
+the same two samples. And ASV82 is about 10X more abundant than the other two.
+Since C. difficile is estimated to have about 12 16S copies in the rrnDB (see
+`hiranonis-asvs.Rmd`), the simplest explanation is that these animals are
+carrying a strain of C. difficile that has ASV82 at most of its 16S copies, and
+the other two ASVs each in 1 or 2 other copies. 
+
+If this is the case, we might expect C. difficile strains in these two samples
+to carry a distinct ribotype. Unfortunately, C. difficile was only isolated
+from one of the two samples,
+```{r}
+cd %>%
+    filter(Sample %in% samples, Present) %>%
+    select(Sample, CD_lab, CD_ribotype) %>%
+    distinct
+```
+However, this ribotype (F078-126) is unique to this sample,
+```{r}
+sam %>% 
+    group_by(CD_lab, CD_ribotype) %>% 
+    count %>% 
+    arrange(CD_ribotype != "F078-126")
+```
+
+## Unknown Clostridioides ASV
+
+In 03-taxonomy.Rmd, we observed that we classified ASV843 as Clostridioides
+genus with no assigned species, and it is 2 b.p. away from ASV82.  Let's see
+which animals it appears in:
+```{r}
+pstb %>%
+    filter(ASV == "ASV843", Abundance > 0) %>%
+    select(Sample, Host_species, CD_lab, CD_either, ASV, Genus, Species) %>%
+    arrange(Host_species)
+```
+This unknown Clostridioides appears only in the Alpaca and 3 Ovine samples, all
+of which were negative for C. difficile by both assays.

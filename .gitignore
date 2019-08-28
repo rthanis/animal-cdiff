@@ -2,6 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+*_cache/
+*_files/
 
 figures/
 tax_dbs/

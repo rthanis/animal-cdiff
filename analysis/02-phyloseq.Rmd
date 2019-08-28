@@ -1,0 +1,131 @@
+---
+title: "Import the microbiome data into phyloseq"
+author: "Mike"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Import DADA2 output into phyloseq
+
+```{r}
+library(phyloseq)
+library(here)
+library(tidyverse)
+```
+
+Load dada2 output and sample metadata
+```{r}
+seqtab <- readRDS(here("results", "dada2", "seqtab_nochim.Rds"))
+taxa <- readRDS(here("results", "dada2", "taxa.Rds"))
+# sam <- read_csv(here("results", "metadata-clean.csv"))
+sam <- readRDS(here("results", "metadata-clean.Rds"))
+glimpse(sam)
+# Turn sam into data frame with sample names as rownames for phyloseq
+samdf <- as.data.frame(sam[, -1])
+rownames(samdf) <- sam$Sample
+```
+The sample names in `seqtab` correspond to `sam$Sequence_ID`, and need to be
+set to the names in sam$Sample.
+```{r}
+rownames(seqtab) <- sam$Sample[match(rownames(seqtab), sam$Sequence_ID)]
+```
+Now we can merge into a phyloseq object,
+```{r}
+# Get phyloseq components
+OTU <- otu_table(seqtab, taxa_are_rows = FALSE)
+SAM <- sample_data(samdf)
+TAX <- tax_table(taxa)
+# Combine into a phyloseq object
+ps <- phyloseq(OTU, SAM, TAX)
+# Add ASV sequences
+seqs <- Biostrings::DNAStringSet(taxa_names(ps))
+names(seqs) <- taxa_names(ps)
+ps <- merge_phyloseq(ps, seqs)
+ps
+```
+This object contains all 197 samples that were sequenced,
+```{r}
+sam %>%
+    group_by(Year_sequenced) %>%
+    count
+```
+It is useful to rename the ASVs to simpler names (ASV1, ASV2, ...). The full
+sequences, which allow us to directly compare our ASVs with those in other
+experiments, are contained in `refseq(ps)`.
+```{r}
+taxa_names(ps) <- paste0("ASV", seq(ntaxa(ps)))
+```
+
+## Add useful sample data fields
+
+```{r}
+# Add total read count as reported by `sample_sum(ps)`,
+sample_data(ps)$Sample_sum <- sample_sums(ps)
+# Add number of C diff 16S reads
+cd_reads <- subset_taxa(ps, 
+    Genus == "Clostridioides" & str_detect(Species, "difficile")) %>%
+    sample_sums
+sample_data(ps)$CD_reads <- cd_reads
+# Add field for CD presence either in lab assay or in reads
+sample_data(ps) <- sample_data(ps) %>%
+    transform(CD_either = ifelse((CD_lab == "Positive") | (CD_reads > 0), 
+            "Positive", "Negative"))
+sample_data(ps) %>% 
+    select(CD_lab, CD_either) %>% 
+    table
+#>           CD_either
+#> CD_lab     Negative Positive
+#>   Negative      148        9
+#>   Positive        0       40
+```
+
+## Filter samples with low read depth
+
+Check the sample read depths:
+```{r}
+qplot(sample_sums(ps)) + scale_x_log10() + 
+    labs(x = "Read depth", y = "Number of samples")
+```
+
+The histogram shows ~2 samples with very low read depth <30 reads, and the rest
+of the samples have good read depth of ~9000+ reads. We should discard these
+two samples. First, let's see what they are:
+```{r}
+sam <- sample_data(ps) %>%
+    as("data.frame") %>%
+    as_tibble(rownames = "Sample")
+sam %>% 
+    arrange(Sample_sum) %>% 
+    select(Sample, Host_species, Sample_sum, CD_lab, CD_reads) %>% 
+    head
+#> # A tibble: 6 x 5
+#>   Sample     Host_species Sample_sum CD_lab   CD_reads
+#>   <chr>      <chr>             <dbl> <fct>       <dbl>
+#> 1 CS51_CN28  Canine                8 Positive        0
+#> 2 CS142_EQ45 Equine               21 Negative        0
+#> 3 CS201_EQ66 Equine             9338 Negative        0
+#> 4 CS197_EQ64 Equine            10012 Negative        0
+#> 5 CS196_EQ63 Equine            10055 Negative        0
+#> 6 CS195_EQ62 Equine            10890 Negative        0
+```
+We will filter these two samples from the rest of our analysis.
+```{r}
+ps <- ps %>%
+    prune_samples(sample_sums(.) > 30, .) %>%
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+ps
+```
+Summary of the read depths for the remaining samples,
+```{r}
+sample_data(ps)$Sample_sum %>% summary
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    9338   19974   23013   23890   25686   60009 
+```
+
+## Save for downstream analysis
+
+```{r}
+saveRDS(ps, here("results", "ps.Rds"))
+```

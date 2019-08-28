@@ -1,0 +1,235 @@
+---
+title: "[Clostridium] hiranonis ASVs"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    # cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggthemes)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+Load the microbiome profiles
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds")) %>%
+    subset_samples(Host_species %in% c("Canine", "Feline", "Equine", 
+            "Ovine")) %>% 
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+ps
+tax <- tax_table(ps) %>% as_tibble %>% rename(ASV = Taxon)
+glimpse(tax)
+```
+
+We consider a sample as CD positive if CD was detected either in the lab assay
+or in the microbiome sequencing profiles.
+```{r}
+sample_data(ps)$CD <- sample_data(ps)$CD_either
+```
+
+## Review BLAST results
+
+Summary of the BLAST results for all ASVs within 97% id of C. hiranonis (see
+`03-taxonomy.Rmd`):
+```{r}
+blast <- read_csv(here::here("results", "hiranonis-and-scindens.csv"))
+blast %>%
+    group_by(NCBI_acc, NCBI_species, Mismatches, Perc_ident) %>%
+    summarize(Num_ASVs = n())
+```
+We have various ASVs within 99% identity of the available C. hiranonis 16S
+sequence, including one that is an exact match. These ASVs are labeled as
+"[Clostridium] hiranonis" in the tax table,
+```{r}
+tax %>%
+    filter(NCBI_species == "[Clostridium] hiranonis") %>%
+    .$ASV
+```
+
+Let's get a data-frame version of the microbiome data w/ just the hiranonis
+strains. Each row will correspond to an ASV-Sample pair.
+```{r}
+hira <- ps %>%
+    subset_taxa(str_detect(NCBI_species, "hiranonis")) %>%
+    as_tibble(tax = FALSE) %>%
+    mutate(Proportion = Abundance / Sample_sum, Present = Abundance > 0)
+glimpse(hira)
+```
+`Abundance` is as read counts, and the sample read depth is recorded as
+`Sample_sum`, so we can obtain proportions and presence-absence information as
+Let's also grab a version where all hiranonis ASVs are aggregated.
+```{r}
+hira.merged <- hira %>%
+    group_by_at(vars("Sample", sample_variables(ps))) %>%
+    summarize_at(vars(Abundance, Proportion), sum) %>%
+    ungroup %>%
+    mutate(Present = Abundance > 0)
+```
+
+## Prevalance of [Clostridium] hiranonis 99% OTU
+
+Let's first check the prevalance of C. hiranonis across host species,
+```{r}
+hira.merged %>%
+    group_by(Host_species) %>%
+    summarize(n_total = n(), n_present = sum(Present), 
+        Prevalance = mean(Present))
+```
+With the exception of 1 equine sample, C. hiranonis is restricted to canines
+and felines.
+
+Two-sided Fisher's exact test of independence between C. hiranonis presence and
+C. difficile presence, for canines and felines:
+```{r}
+tb <- hira.merged %>%
+    filter(Host_species %in% c("Canine", "Feline")) %>%
+    rename(CH = Present) %>%
+    group_by(Host_species, CD, CH) %>%
+    count() %>%
+    spread(CD, n, fill = 0)
+tb
+# Test canines:
+tb[1:2,3:4]
+fisher.test(tb[1:2,3:4])
+# Test felines:
+tb[3:4,3:4]
+fisher.test(tb[3:4,3:4])
+```
+
+## Prevalance of [Clostridium] hiranonis ASVs
+
+Prevalence of various hiranonis ASVs across host species:
+```{r}
+hira %>%
+    filter(Abundance > 0) %>%
+    group_by(Host_species, Taxon) %>%
+    count %>%
+    arrange(Host_species, -n) %>%
+    print(n=Inf)
+```
+ASV4 is the most prevalent by far, ASV62 also has substantial prevalence in
+Canines, and all other ASVs appear only 1-3 times.
+
+To try to get a better view of what's going on, let's lump together all the
+rare ASVS (the ones besides 4 and 62).
+```{r}
+hira0 <- hira %>%
+    mutate(Taxon = ifelse(Taxon %in% c("ASV4", "ASV62"), Taxon, "Other")) %>%
+    group_by_at(vars(Sample, Taxon, sample_variables(ps))) %>%
+    summarize_at(vars(Abundance, Proportion), sum) %>%
+    ungroup
+hira0 %>%
+    select(Sample, Taxon, Abundance, Proportion)
+tb <- hira0 %>%
+    select(-Proportion) %>%
+    spread(Taxon, Abundance) %>%
+    filter(ASV4 + ASV62 + Other > 0) %>%
+    mutate(CH_type = case_when(
+            (ASV62 == 0) & (Other == 0) ~ "ASV4 only",
+            (ASV62 > 0) & (Other == 0)  ~ "ASV4 + ASV62",
+            (ASV62 > 0) & (Other > 0) ~ "ASV4, ASV62, + Other",
+            (ASV62 == 0) & (Other > 0) ~ "ASV4 + Other"))
+```
+Let's look at the co-occurrance of the three types
+```{r}
+tb %>%
+    mutate_at(vars(ASV4, ASV62, Other), ~ . > 0) %>%
+    group_by(ASV4, ASV62, Other) %>%
+    count
+```
+We always find ASV4 if any C. hiranonis is present. About 50% of the time we
+find ASV4 alone, and 50% of the time we find ASV4 with other ASVs. The other
+ASV is about equally likely to be ASV62 or some other ASV.  We find ASV4,
+ASV62, and other hiranonis ASVs together in 6 samples.
+
+Let's look at the ratio of reads of all non-ASV4 to ASV4 in samples with
+non-ASV4:
+```{r}
+tb %>% 
+    ggplot(aes((ASV62 + Other) / ASV4, fill = CH_type)) +
+    geom_dotplot(stackgroups = TRUE, binpositions = "all", binwidth = 0.015) +
+    scale_y_continuous(breaks = c()) +
+    labs(y = "Count", title = "Ratio of non-ASV4 to ASV4 reads")
+```
+
+Another way to look at the co-abundance pattern is to plot the number
+of reads from non-ASV4 ASVs against ASV4 on a log scale,
+```{r}
+tb %>%
+    filter(ASV4 > 0) %>%
+    ggplot(aes(log10(ASV4), log10(Other + ASV62), color = ASV62 > 0)) +
+    geom_abline(color = "black" ) +
+    geom_abline(intercept = -1, color = "grey") +
+    geom_point() +
+    coord_fixed(xlim = c(0, 4.5), ylim = c(1.5, 3.5)) +
+    labs(title = "Non-ASV4 vs. ASV4 reads")
+```
+
+Shown for scale is a black line corresponding to a 1:1 ratio and a grey line
+corresponding to a 1:10 ratio.
+
+These figures shows that we only have other ASVs when we have ASV4 also present
+and in a higher abundance. This suggests that we have various strains of C.
+hiranonis for which most to all 16S copies in C. hiranonis are ASV4 in the
+amplified region, and some strains have other ASVs at a minority of 16S copies.
+
+Consistent with this hypothesis, is the fact that we should expect C. hiranonis
+to have around 12 copies of the 16S gene, based on the fact that it's closest
+relative in the rrnDB is C. difficile, which is found to have 12 copies in
+nearly all of the ~50 C. difficile genomes in the database. (See below)
+
+This data indicates that we likely have a variety of C. hiranonis strains, but
+most are too rare to try to consider their individual effect on C. difficile.
+Therefore, going forward we might consider two approaches; first, is to
+aggregate all C. hiranonis ASVs into a single 99% identity C. hiranonis OTU.
+Second is to classify samples into three categories: No C. hiranonis present,
+ASV4 present, and both ASV4 and ASV62 present.
+
+## 16S copy number
+
+The rrnDB contains a currated list of taxonomically classified genomes with 16S
+copy-number estimates. C. hiranonis is not represented in the database, and so
+we must estimate it's copy number from related strains. Using the 
+[online portal to the RDP
+classifier](https://rrndb.umms.med.umich.edu/estimate/) on the C. hiranonis
+ASVs resulted in classification of all ASVs to the RDP genus "Clostridium XI"
+in the family Peptostreptococcaceae, which is the same RDP genus containing C.
+difficile. The records for this genus can be viewed here: 
+[Clostridium XI copy numbers](https://rrndb.umms.med.umich.edu/genomes/browser?superkingdom=&phylum=&tax_class=&order=&family=&genus=Clostridium+XI&taxonomy=16&button=Go)
+and are summarized by
+
+| Genus          | Genomes | Range   | Mode | Median | Mean | Std Dev |
+|:---------------|:--------|:--------|:-----|:-------|:-----|:--------|
+| Clostridium XI | 49      | 10 - 17 | 12   | 12     | 12.0 | 0.80    |
+
+Of these 49 genomes, 48 are clasified as C. difficile, have a range of 10-12,
+and nearly all have a copy number of 12. The remaining genome has a copy number
+of 17 and is classified as Paeniclostridium sordellii.
+
+On the whole, this suggests that the copy number of C. hiranonis is likely to
+at least around 10, indicating that it is plausible to see such a variety of
+ASVs co-occuring in the same genomes with and at lower abundance than ASV4.
+

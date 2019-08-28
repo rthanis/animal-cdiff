@@ -1,0 +1,84 @@
+---
+title: "C. difficile vs. age in canines"
+author: Michael McLaren
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6
+)
+```
+
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(ggbeeswarm)
+library(ggthemes)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+```{r}
+sam <- readRDS(here("results", "metadata-clean.Rds"))
+glimpse(sam)
+```
+
+## SI figure showing what is happening with age in Canines
+
+```{r}
+tb <- sam %>%
+    filter(Host_species == "Canine")
+```
+
+CD lab assay vs. age,
+```{r, warning = FALSE, fig.width = 6, fig.height = 3.5}
+p1 <- sam %>%
+    filter(Host_species == "Canine") %>%
+    ggplot(aes(Age, CD_lab, color = Age_group)) +
+    geom_quasirandom(aes(x = replace_na(Age, -2)), groupOnX = FALSE) +
+    # scale_y_continuous(breaks = c(0, 1), 
+    #     labels = c("Negative", "Positive")) +
+    scale_color_manual(values = colors.age_group) +
+    labs(y = expression(italic("C. difficile")~"lab assay"),
+        x = "Age (years)", 
+        color = "Age group") +
+    theme(
+        # axis.line.x=element_blank(), 
+        axis.line.y=element_blank(),
+        panel.grid.major.y = element_line(color = "grey")
+    )
+p1
+ggsave(here("figures", "cd-vs-age.pdf"),
+    device = cairo_pdf,
+    width = 6, height = 3.5, units = "in")
+```
+
+Collapse into groups:
+```{r, warning = FALSE, fig.width = 6, fig.height = 5.5}
+p2 <- sam %>%
+    filter(Host_species == "Canine") %>%
+    ggplot(aes(relevel(Age_group, "Not known"), fill = CD_lab)) +
+    geom_bar(position = "dodge", width = 0.5) +
+    labs(y = "Number of samples", fill = "C. difficile\nlab assay", 
+        x = "Age group") +
+    theme(axis.line.x=element_blank())
+plot_grid(p1, p2, ncol=1, align = "h", labels = c("A", "B"))
+ggsave(here("figures", "cd-vs-age-2panel.pdf"),
+    device = cairo_pdf,
+    width = 6, height = 5.5, units = "in",
+)
+```
