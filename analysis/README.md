@@ -69,10 +69,3 @@ ASVs.
 This script performs logistic regression of C. difficile presence versus
 presence of the two C. hiranonis types, with and without the sample covariates
 of age, antibiotics use, GI distress, and sex.
-
-#### stone2019.Rmd
-
-The first part of this script creates the object `results/stone2019-ps.Rds`
-from the QIIME2 output files from Stone2019, obtained via personal
-correspondence with Nathan Stone. The rest compares the C. difficile - C.
-hiranonis relationship observed in the Stone2019 data and in our data.
