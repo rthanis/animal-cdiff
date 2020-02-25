@@ -1,0 +1,37 @@
+```{r load_packages}
+library(here)
+library(phyloseq)
+library(tidyverse)
+library(cowplot) # needed to run custom functions script
+# Custom function script loaded for as_tibble methods
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+Load the phyloseq object and pull out the taxonomy and reference sequences,
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds"))
+# taxonomy (silva assignments for all ASVs and NCBI species for select ASVs)
+tax <- tax_table(ps) %>% as_tibble
+# amplicon sequences
+ref <- refseq(ps) %>% as_tibble
+```
+Save a table with this information for all ASVS,
+```{r}
+tb <- left_join(ref, tax, by = "Taxon") %>%
+  rename_all(str_to_lower) %>%
+  rename(feature_id = taxon)
+write_csv(tb, here("results", "all-asv-sequences-and-taxonomy.csv"))
+```
+and a table with just the Clostridiodes and C. hiranonis ASVs and the ASVs
+shown in Figure 3,
+```{r}
+figure3_asvs <- c("ASV4", "ASV10", "ASV20", "ASV37", "ASV62", "ASV82",
+  "ASV112", "ASV233", "ASV331")
+tb0 <- tb %>%
+  filter(
+    genus == "Clostridioides" | 
+    ncbi_species == "[Clostridium] hiranonis" | 
+    feature_id %in% figure3_asvs
+  )
+write_csv(tb0, here("results", "select-asv-sequences-and-taxonomy.csv"))
+```
