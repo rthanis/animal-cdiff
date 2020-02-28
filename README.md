@@ -1,5 +1,9 @@
 # Data and analysis for Thanissery et al (2019)
 
+<!-- badges: start -->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3691924.svg)](https://doi.org/10.5281/zenodo.3691924)
+<!-- badges: end -->
+
 This repository contains the microbiome data analysis for the manuscript
 
 Thanissery R, McLaren MR, Rivera A, Reed AD, Betrapally NS, Burdette T, Winston
