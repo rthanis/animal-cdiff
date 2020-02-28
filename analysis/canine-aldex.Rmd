@@ -146,7 +146,8 @@ top_hits %>%
     select(-Phylum) %>%
     knitr::kable(digits = 3)
 ```
-The top differentially abundant taxa according to ALDEx2 mainly have p-valuse <
+
+The top differentially abundant taxa according to ALDEx2 mainly have p-values <
 0.05 by the Fisher test, and in the expected direction. This observation is
 consistent with the idea that ALDEx2 is mainly picking up presence/absence
 patterns, which we explore visually below.

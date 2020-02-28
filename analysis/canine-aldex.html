@@ -2443,52 +2443,9 @@ top_hits %&gt;%
 <td align="right">0.371</td>
 <td align="right">0.048</td>
 </tr>
-<tr class="odd">
-<td align="left">The top d</td>
-<td align="right">ifferenti</td>
-<td align="right">ally abu</td>
-<td align="right">ndant tax</td>
-<td align="right">a accord</td>
-<td align="right">ing to AL</td>
-<td align="left">DEx2 mainly have p-valuse &lt;</td>
-<td align="right"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="left">0.05 by t</td>
-<td align="right">he Fisher</td>
-<td align="right">test, a</td>
-<td align="right">nd in the</td>
-<td align="right">expecte</td>
-<td align="right">d directi</td>
-<td align="left">on. This observation is</td>
-<td align="right"></td>
-<td align="right"></td>
-</tr>
-<tr class="odd">
-<td align="left">consisten</td>
-<td align="right">t with th</td>
-<td align="right">e idea t</td>
-<td align="right">hat ALDEx</td>
-<td align="right">2 is mai</td>
-<td align="right">nly picki</td>
-<td align="left">ng up presence/absence</td>
-<td align="right"></td>
-<td align="right"></td>
-</tr>
-<tr class="even">
-<td align="left">patterns,</td>
-<td align="right">which we</td>
-<td align="right">explore</td>
-<td align="right">visually</td>
-<td align="right">below.</td>
-<td align="right"></td>
-<td align="left"></td>
-<td align="right"></td>
-<td align="right"></td>
-</tr>
 </tbody>
 </table>
+<p>The top differentially abundant taxa according to ALDEx2 mainly have p-values &lt; 0.05 by the Fisher test, and in the expected direction. This observation is consistent with the idea that ALDEx2 is mainly picking up presence/absence patterns, which we explore visually below.</p>
 <pre class="r"><code># Pick the top 4 positive and negative associations, plus ASV62
 taxa &lt;- x.all %&gt;%
     group_by(sign(effect)) %&gt;%
