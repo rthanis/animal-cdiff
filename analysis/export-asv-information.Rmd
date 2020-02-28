@@ -30,8 +30,18 @@ figure3_asvs <- c("ASV4", "ASV10", "ASV20", "ASV37", "ASV62", "ASV82",
 tb0 <- tb %>%
   filter(
     genus == "Clostridioides" | 
-    ncbi_species == "[Clostridium] hiranonis" | 
-    feature_id %in% figure3_asvs
+      ncbi_species == "[Clostridium] hiranonis" | 
+      feature_id %in% figure3_asvs
   )
 write_csv(tb0, here("results", "select-asv-sequences-and-taxonomy.csv"))
+```
+and a minimal table without the low-prevalence C. hiranonis sequences,
+```{r}
+tb1 <- tb0 %>%
+  filter(
+    ncbi_species != "[Clostridium] hiranonis" |
+      is.na(ncbi_species) |
+      feature_id %in% c("ASV4", "ASV62")
+  )
+write_csv(tb1, here("results", "manuscript-asv-sequences-and-taxonomy.csv"))
 ```
