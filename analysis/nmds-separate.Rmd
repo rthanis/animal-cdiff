@@ -1,0 +1,111 @@
+---
+title: "Separate NMDS plots for canines and equines"
+author: "Mike"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    self_contained: true
+---
+
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+# Global chunk options
+knitr::opts_chunk$set(
+    # cache = TRUE, autodep = TRUE,
+    include = TRUE, echo = TRUE,
+    warning = TRUE, message = FALSE, 
+    fig.width = 6, fig.asp = 3/4
+)
+```
+
+```{r load_packages}
+library(phyloseq)
+library(tidyverse)
+library(here)
+library(cowplot)
+# Custom functions and plot setup
+source(here("analysis", "functions-and-ggplot-setup.R"))
+```
+
+Load the microbiome profiles, excluding the single Alpaca and Avian sample.
+```{r, load_data}
+ps <- readRDS(here("results", "ps.Rds")) %>%
+    subset_samples(Host_species %in% c("Canine", "Feline", "Equine", 
+            "Ovine")) %>% 
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+ps
+```
+We consider a sample as CD positive if CD was detected either the lab assay or
+in the microbiome sequencing profiles.
+```{r}
+sample_data(ps)$CD <- sample_data(ps)$CD_either
+sam <- sample_data(ps) %>% as_tibble
+glimpse(sam)
+```
+
+Convert profiles to proportions
+```{r}
+ps.prop <- ps %>%
+    transform_sample_counts(function (x) x / sum(x))
+```
+
+Get separate phyloseq objects for canines and equines
+```{r}
+ps.canine <- ps.prop %>%
+    subset_samples(Host_species == "Canine") %>%
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+ps.equine <- ps.prop %>%
+    subset_samples(Host_species == "Equine") %>%
+    filter_taxa(function (x) sum(x) > 0, prune = TRUE)
+```
+
+## NMDS plots
+
+Do NMDS separately for canines and for equines
+```{r}
+set.seed(1234)
+tb <- list(Canine = ps.canine, Equine = ps.equine) %>%
+  enframe("host_species", "ps") %>%
+  mutate(ord = map(ps, ordinate, method = "NMDS", distance = "bray", 
+      trymax = 50))
+```
+
+Create plots
+```{r}
+tb <- tb %>%
+  mutate(
+    plot = map2(ps, ord, 
+      ~ plot_ordination(.x, .y, color = "Host_species", 
+        shape = "CD", type="samples") +
+        scale_color_manual(values = colors.host_species, guide = NULL) +
+        scale_shape_manual(values = shape.cd)
+      ),
+    plot = map2(plot, host_species, 
+      ~ .x +
+        labs(shape = italicize("C. difficile"), title = .y)
+    )
+  )
+```
+
+```{r, fig.dim = c(5,6) * 5/3}
+plot_grid(plotlist = tb$plot, ncol = 1)
+```
+
+
+```{r}
+ggsave(here("figures", "nmds-canine-equine-separated.pdf"), 
+    width = 5, height = 6, units = "in", scale = 5/3,
+    useDingbats = FALSE)
+```
+
+
+## Session info
+
+```{r}
+sessionInfo()
+```

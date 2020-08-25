@@ -57,6 +57,13 @@ Rendered version:
 Rendered version with C. difficle reads removed:
 [alpha-beta-no-cdiff.html](https://rthanis.github.io/animal-cdiff/analysis/alpha-beta-no-cdiff.html)
 
+#### nmds-separate.Rmd
+
+This script creates separate Bray-Curtis NMDS plots for canines and equines.
+
+Rendered version:
+[nmds-separate.html](https://rthanis.github.io/animal-cdiff/analysis/nmds-separate.html)
+
 #### canine-aldex.Rmd
 
 This script performs a compositional PCA analysis and community-wide
